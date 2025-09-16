@@ -3,8 +3,6 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import argon2 from "argon2"; // Argon2id for password verification (memory-hard, GPU-resistant, modern PHC winner)
 import passport from "passport";
-// bcrypt is NOT installed anymore; we'll attempt a dynamic import only if we detect a legacy bcrypt hash.
-let bcryptModule = null; // cached reference after first dynamic load
 
 const router = express.Router();
 
@@ -49,55 +47,14 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ success: false, error: "Invalid credentials" });
     }
 
-    let passwordMatches = false;
-
-  // Hash format detection:
-  //  - Argon2 hashes start with $argon2 and embed parameters + salt + hash (facilitates future tuning)
-  //  - Legacy bcrypt hashes start with $2x/$2a/$2b/$2y and are less memory-hard
-  // This allows seamless migration: verify old bcrypt once, then upgrade to Argon2 transparently.
-    const storedHash = user.password;
-    const isArgon2Hash = storedHash.startsWith('$argon2');
-  const isBcryptHash = storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$');
-
     try {
-      if (isArgon2Hash) {
-        passwordMatches = await argon2.verify(storedHash, password);
-      } else if (isBcryptHash) {
-        // Legacy bcrypt verification (backward compatibility path)
-        if (!bcryptModule) {
-          try {
-            bcryptModule = await import('bcryptjs');
-          } catch (e) {
-            console.error('Legacy bcrypt hash detected but bcryptjs not available.');
-            return res.status(500).json({ success: false, error: "Server hash verification configuration error" });
-          }
-        }
-        const { default: bcrypt } = bcryptModule;
-        passwordMatches = await bcrypt.compare(password, storedHash);
-        // On success, transparently upgrade hash to Argon2id
-        if (passwordMatches) {
-          // On successful bcrypt verification, upgrade to Argon2id.
-          // Rationale: Argon2 provides better defense against GPU/ASIC cracking by being memory-hard
-          // and enables parameter evolution over time without changing code storing salts separately.
-          try {
-            const newHash = await argon2.hash(password, { type: argon2.argon2id });
-            user.password = newHash;
-            await user.save();
-          } catch (rehashErr) {
-            console.warn('Rehash (bcrypt -> argon2) failed:', rehashErr.message);
-          }
-        }
-      } else {
-        // Unknown hash format: force failure (could log anomaly)
-        passwordMatches = false;
+      const ok = await argon2.verify(user.password, password);
+      if (!ok) {
+        return res.status(400).json({ success: false, error: "Invalid credentials" });
       }
     } catch (verifyErr) {
-      console.error('Password verification error:', verifyErr.message);
+      console.error('Password verification error (argon2):', verifyErr.message);
       return res.status(500).json({ success: false, error: "Server error during password verification" });
-    }
-
-    if (!passwordMatches) {
-      return res.status(400).json({ success: false, error: "Invalid credentials" });
     }
 
     // Create JWT Payload

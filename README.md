@@ -124,27 +124,10 @@ Future extension:
 - JWT secret must be long & random
 - Add rate limiting & helmet for production
 - Implement HTTPS & secure cookies if deploying behind a proxy
-- Passwords hashed with Argon2id (memory-hard; safer vs GPU cracking than bcrypt). Legacy bcrypt hashes are auto-upgraded on successful login.
+- Passwords hashed exclusively with Argon2id (memory-hard; safer vs GPU cracking than bcrypt).
 
-## Password Hashing Migration (bcrypt -> Argon2id)
-The project originally used bcrypt. It now uses Argon2id via the `argon2` npm package.
-
-Why Argon2id?
-1. Memory-hard: significantly raises cost of large-scale GPU/ASIC cracking.
-2. Side-channel resistant design (id variant combines Argon2i & Argon2d strengths).
-3. Encoded parameters in hash string allow future tuning without schema changes.
-
-Migration Strategy:
-1. New / updated passwords are hashed with Argon2id during `User` model pre-save.
-2. During login, hash prefix inspection is performed:
-	- `$argon2` => verify with Argon2
-	- `$2a$`, `$2b$`, `$2y$` => legacy bcrypt verify then transparently re-hash with Argon2id
-3. After successful legacy verification, the stored hash is replaced (zero-downtime rolling upgrade).
-
-Operational Notes:
-- If you still have many legacy bcrypt hashes and want to FORCE upgrade, you can script a batch rehash (not included).
-- Tune memory/time cost via environment variables if needed for production hardware.
-- Dynamic bcrypt import is used only if a legacy hash is encountered, keeping Argon2 the primary dependency.
+## Password Hashing
+All passwords are hashed with Argon2id via the `argon2` library using secure defaults. No legacy bcrypt hashes are supported in this codebase. If migrating from an older deployment that used bcrypt, force users to reset their passwords or run an offline migration script before deploying this version.
 
 ## Production Build
 ```
