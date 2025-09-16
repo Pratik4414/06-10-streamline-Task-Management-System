@@ -1,0 +1,135 @@
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Four columns as in the image */
+  gap: 1.5rem;
+  height: calc(100vh - 150px);
+}
+
+.kanban-column {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0 0.5rem 1rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.column-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.kanban-task {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: grab;
+  border-left: 3px solid var(--accent-secondary);
+}
+.task-title {
+  font-weight: 500;
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.task-meta {
+  display: flex;
+  gap: 0.75rem;
+}
+.task-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.star-icon {
+  color: #FACC15; /* Yellow star */
+}
+.progress-bar {
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  margin-top: 0.75rem;
+}
+.progress-bar div {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 3px;
+}
+
+/* --- Modal Styles --- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #2A2F45;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 450px;
+  border: 1px solid #383E5E;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: #FFFFFF;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.close-button {
+  background: none;
+  border: none;
+  color: #A3AED0;
+  cursor: pointer;
+}
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.modal-content input, .modal-content select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #383E5E;
+  background: #1A1D2E;
+  color: #FFFFFF;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.error-message {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 0.75rem;
+  border-radius: 6px;
+  text-align: center;
+}
+ 

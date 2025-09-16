@@ -1,0 +1,23 @@
+
+/* === Import Google Font === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* === CSS Variables for Theming === */
+:root {
+  --bg-primary: #1A1D2E;
+  --bg-secondary: #2A2F45;
+  --bg-tertiary: #383E5E;
+  --accent-primary: #8A63D2;
+  --accent-secondary: #4A90E2;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A3AED0;
+  --border-color: #383E5E;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
