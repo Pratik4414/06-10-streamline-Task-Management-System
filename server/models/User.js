@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import argon2 from "argon2"; // Using Argon2id for password hashing
 
 const UserSchema = new mongoose.Schema({
   name: { 
@@ -28,14 +28,26 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Encrypt password before saving a new user with a password
+// Hash password with Argon2 before saving (only if modified or new)
+// Argon2id chosen over bcrypt for improved resistance to GPU cracking and side-channel attacks.
+// The argon2 library automatically encodes parameters (memoryCost, timeCost, parallelism) into the hash string.
 UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || !this.password) {
-    return next();
+  try {
+    if (!this.isModified("password") || !this.password) {
+      return next();
+    }
+    // Use secure defaults; you can tune memoryCost/timeCost via env if needed.
+    this.password = await argon2.hash(this.password, {
+      type: argon2.argon2id
+      // Example for customization:
+      // memoryCost: 2 ** 16, // 64 MB
+      // timeCost: 3,
+      // parallelism: 1
+    });
+    next();
+  } catch (err) {
+    next(err);
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 export default mongoose.model("User", UserSchema);
