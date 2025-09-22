@@ -129,6 +129,17 @@ Future extension:
 ## Password Hashing
 All passwords are hashed with Argon2id via the `argon2` library using secure defaults. No legacy bcrypt hashes are supported in this codebase. If migrating from an older deployment that used bcrypt, force users to reset their passwords or run an offline migration script before deploying this version.
 
+### Migrating From Older (bcrypt) Instances
+Because bcrypt support has been fully removed:
+1. Take a backup of your users collection.
+2. Either (a) invalidate all existing sessions & require a password reset email flow, or (b) run a one-time offline script that:
+	- Reads each user with a bcrypt hash (prefix `$2`)
+	- Prompts / generates a temporary random password sent securely to the user (or triggers reset tokens)
+	- Replaces the password with an Argon2id hash
+3. Deploy this Argon2-only version after all active bcrypt hashes are gone.
+
+Attempting to log in with a leftover bcrypt hash will now fail because only Argon2 verification exists.
+
 ## Production Build
 ```
 # Build client

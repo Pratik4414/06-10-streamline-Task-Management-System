@@ -56,7 +56,16 @@ export const createTask = (taskData) => api.post('/tasks', taskData);
 
 // --- TEAM API CALLS (Manager Only) ---
 export const getTeamMembers = () => api.get('/team');
-export const addTeamMember = (memberData) => api.post('/team/add', memberData);
+export const getTeamOverview = () => api.get('/team/overview');
+export const getAvailableUsers = (excludeIds = []) => {
+  const params = new URLSearchParams();
+  if (excludeIds.length) params.set('exclude', excludeIds.join(','));
+  return api.get(`/team/available-users?${params.toString()}`);
+};
+export const addExistingMembers = (userIds) => api.post('/team/add-members', { userIds });
+export const createTeam = (payload) => api.post('/team/create', payload);
+export const updateTeamMembers = (teamId, memberIds) => api.patch(`/team/${teamId}/members`, { memberIds });
+export const deleteTeam = (teamId) => api.delete(`/team/${teamId}`);
 
 
 // --- Reports API Calls ---
