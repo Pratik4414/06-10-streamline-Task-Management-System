@@ -29,7 +29,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout function
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Call logout API to record logout time
+      const { logoutUser } = await import('../services/api');
+      await logoutUser();
+    } catch (error) {
+      // Continue with logout even if API call fails
+      console.error('Logout API call failed:', error);
+    }
+    
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);

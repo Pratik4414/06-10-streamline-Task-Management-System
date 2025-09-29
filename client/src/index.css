@@ -20,15 +20,31 @@ html, body, #root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  /* Default to dark theme */
+  --bg: #0F172A;
+  --text: #FFFFFF;
+  --accent: #4F46E5;
+  --surface: #2A2F45;
+  --surface-hover: #383E5E;
+  --border: #383E5E;
+  --muted: #A3AED0;
+  color: var(--text);
+  background-color: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --bg: #F9FAFB;
+  --text: #1F2937;
+  --accent: #4F46E5;
+  --surface: #FFFFFF;
+  --surface-hover: #F3F4F6;
+  --border: #E5E7EB;
+  --muted: #6B7280;
 }
 
 a {

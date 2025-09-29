@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '../services/api'; // <-- Import the new API function
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Menu, MoreHorizontal, CheckSquare } from 'lucide-react';
@@ -8,6 +9,7 @@ import './DashboardPage.css';
 
 const DashboardPage = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     // State to hold real data from the API
     const [stats, setStats] = useState({
         completedTasksData: [],
@@ -15,6 +17,7 @@ const DashboardPage = () => {
         scheduleData: []
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [backupCodesWarning, setBackupCodesWarning] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -28,6 +31,15 @@ const DashboardPage = () => {
             }
         };
         fetchStats();
+        
+        // Check for backup codes warning from login
+        const warningData = sessionStorage.getItem('backupCodesWarning');
+        if (warningData) {
+            const warning = JSON.parse(warningData);
+            setBackupCodesWarning(warning);
+            // Clear the warning from session storage
+            sessionStorage.removeItem('backupCodesWarning');
+        }
     }, []);
     
     if (!user || isLoading) return <div className="loading-state">Loading Dashboard...</div>;
@@ -51,6 +63,30 @@ const DashboardPage = () => {
 
             {/* Main Content Grid */}
             <div className="dashboard-grid">
+                {/* Backup Codes Warning */}
+                {backupCodesWarning && (
+                    <div className="backup-codes-warning">
+                        <div className="warning-content">
+                            <span className="warning-icon">⚠️</span>
+                            <div className="warning-text">
+                                <strong>Security Alert:</strong> {backupCodesWarning.message}
+                            </div>
+                            <button 
+                                className="warning-action"
+                                onClick={() => navigate('/settings?focus=security')}
+                            >
+                                Generate New Codes
+                            </button>
+                            <button 
+                                className="warning-dismiss"
+                                onClick={() => setBackupCodesWarning(null)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
                 <main className="dashboard-main">
                     <h1 className="main-title">Task Management</h1>
                     <div className="kanban-placeholder">

@@ -166,5 +166,46 @@ PRs welcome. Open issues for feature discussion.
 ## Author
 Your Name (replace in README). Add contact or portfolio link.
 
+## Authentication & API (Added)
+
+### Environment Variables
+See `.env.example` and copy to `.env` in `server/` (backend) root or project root depending on your process manager.
+
+```
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/project_mgmt
+JWT_SECRET=REPLACE_ME_WITH_A_LONG_RANDOM_STRING
+VITE_API_URL=http://localhost:5000/api
+```
+
+### Login Request
+POST /api/auth/login
+Body: { "email": "user@example.com", "password": "Secret123!" }
+
+Success 200:
+{ "success": true, "token": "<jwt>", "user": { "id": "...", "name": "...", "email": "...", "role": "employee|manager" } }
+
+MFA Challenge 200 (when backup codes exist):
+{ "success": true, "mfaRequired": true, "mfaType": "backup", "mfaToken": "<short-lived-token>" }
+
+Failure (credentials / validation):
+400 { "success": false, "error": "Invalid credentials" }
+
+Server misconfig (e.g. missing secret):
+500 { "success": false, "error": "Server configuration error" }
+
+### MFA Verify
+POST /api/auth/mfa/verify
+Body: { "mfaToken": "<token>", "backupCode": "abcd1234" }
+
+### Health Check
+GET /api/health -> { status: 'ok', uptime, timestamp }
+
+### Frontend API Base
+Configured via `VITE_API_URL`; default fallback `http://localhost:5000/api`.
+
+### Error Handling Strategy
+All auth routes return JSON with `success` boolean and either `token/user` or `error` string. Transport issues are surfaced to the user as network connectivity messages instead of generic failure.
+
 ---
 Happy building! 🚀

@@ -1,0 +1,40 @@
+.settings-page { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+.settings-sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: fit-content; }
+.settings-tab { display: block; width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; }
+.settings-tab.active, .settings-tab:hover { background: var(--surface-hover); color: var(--text); }
+.settings-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.settings-title { margin: 0 0 12px; color: var(--text); font-size: 1.2rem; font-weight: 700; }
+.settings-form { display: grid; gap: 12px; }
+.settings-form label { display: grid; gap: 6px; color: var(--muted); }
+.settings-form input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.settings-error { color: #ef4444; background: rgba(239, 68, 68, 0.12); padding: 10px; border-radius: 8px; }
+.settings-success { color: #16a34a; background: rgba(22, 163, 74, 0.12); padding: 10px; border-radius: 8px; }
+
+/* Theme toggle */
+.theme-toggle { display: inline-flex; border: 1px solid var(--border); background: var(--bg); border-radius: 10px; overflow: hidden; }
+.toggle-option { padding: 8px 14px; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.toggle-option input { margin: 0; }
+.toggle-option.active { background: var(--surface-hover); color: var(--text); }
+.muted-hint { margin-top: 10px; color: var(--muted); font-size: 0.9rem; }
+
+/* Notifications layout tweaks */
+.settings-form > div:has(> .settings-title + .theme-toggle) {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* extra space between label and options */
+}
+
+/* Password helpers */
+.password-strength { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.strength-bar { width: 120px; height: 6px; background: var(--surface-hover); border-radius: 999px; overflow: hidden; }
+.strength-fill { height: 100%; width: 0; border-radius: 999px; transition: width 0.2s ease; }
+.strength-text { font-size: 0.85rem; }
+.field-errors { display: grid; gap: 4px; margin-top: 6px; }
+.error-text { color: #ef4444; font-size: 0.85rem; }
+.password-requirements { margin-top: 6px; }
+.password-requirements ul { margin-left: 16px; color: var(--muted); }
+.password-requirements li.valid { color: #10b981; }
+
+@media (max-width: 900px) {
+  .settings-page { grid-template-columns: 1fr; }
+}

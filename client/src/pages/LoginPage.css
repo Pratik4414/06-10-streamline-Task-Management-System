@@ -164,6 +164,13 @@
 }
 
 /* Spinner for loading state */
+.form-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
 .spinner {
   width: 20px;
   height: 20px;
@@ -208,4 +215,22 @@
 .input-group input:valid:not(:placeholder-shown):focus {
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Recovery Link Button */
+.recovery-link-btn {
+  background: none;
+  border: none;
+  color: #a78bfa;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  margin-top: 0.5rem;
+  padding: 0;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.recovery-link-btn:hover {
+  color: #c4b5fd;
 }

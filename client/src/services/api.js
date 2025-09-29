@@ -1,13 +1,11 @@
 
 import axios from 'axios';
 
-// The base URL for all our backend API calls
-const API_URL = 'http://localhost:5000/api';
+// Base URL from environment with fallback (documented in .env.example)
+export const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'http://localhost:5000/api';
 
-// We create an instance of axios to reuse the base URL
-const api = axios.create({
-  baseURL: API_URL,
-});
+// Single axios instance
+const api = axios.create({ baseURL: API_URL, timeout: 10000 });
 
 // This interceptor automatically adds the JWT token to every request.
 api.interceptors.request.use((config) => {
@@ -21,28 +19,60 @@ api.interceptors.request.use((config) => {
 // --- AUTHENTICATION API CALLS ---
 export const loginUser = async (email, password) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+    const response = await api.post('/auth/login', { email, password });
     return response.data;
   } catch (error) {
-    return error.response?.data || { success: false, error: 'A network error occurred.' };
+    if (error.response) {
+      return error.response.data || { success: false, error: 'Unexpected server response' };
+    }
+    if (error.request) {
+      return { success: false, error: 'Network unreachable. Check server availability.' };
+    }
+    return { success: false, error: 'Request setup failed' };
+  }
+};
+
+export const verifyBackupCode = async (tempToken, backupCode) => {
+  try {
+    const response = await api.post('/auth/verify-backup-code', { tempToken, backupCode });
+    return response.data;
+  } catch (error) {
+    if (error.response) return error.response.data;
+    if (error.request) return { success: false, error: 'Network unreachable.' };
+    return { success: false, error: 'Request setup failed' };
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    const response = await api.post('/auth/logout');
+    return response.data;
+  } catch (error) {
+    if (error.response) return error.response.data;
+    if (error.request) return { success: false, error: 'Network unreachable.' };
+    return { success: false, error: 'Request setup failed' };
   }
 };
 
 export const registerUser = async (userData) => {
-    try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
-      return response.data;
-    } catch (error) {
-      return error.response?.data || { success: false, error: 'A network error occurred.' };
-    }
-  };
+  try {
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+  } catch (error) {
+    if (error.response) return error.response.data;
+    if (error.request) return { success: false, error: 'Network unreachable.' };
+    return { success: false, error: 'Request setup failed' };
+  }
+};
 
 export const forgotPassword = async (email) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
+    const response = await api.post('/auth/forgot-password', { email });
     return response.data;
   } catch (error) {
-    return error.response?.data || { success: false, error: 'A network error occurred.' };
+    if (error.response) return error.response.data;
+    if (error.request) return { success: false, error: 'Network unreachable.' };
+    return { success: false, error: 'Request setup failed' };
   }
 };
 
@@ -70,5 +100,49 @@ export const deleteTeam = (teamId) => api.delete(`/team/${teamId}`);
 
 // --- Reports API Calls ---
 export const getDashboardStats = () => api.get('/reports/dashboard-stats');
+
+// --- Notifications ---
+export const getNotificationPreferences = () => api.get('/notifications/preferences');
+export const updateNotificationPreferences = (payload) => api.put('/notifications/preferences', payload);
+export const listNotifications = (params = {}) => api.get('/notifications', { params });
+export const markNotificationRead = (id) => api.patch(`/notifications/${id}/read`);
+
+// --- Security Log ---
+export const getSecurityLogs = (params = {}) => api.get('/security/logs', { params });
+
+// --- 2FA ---
+export const setupTOTP = () => api.post('/2fa/setup-totp');
+export const enable2FA = (code) => api.post('/2fa/enable', { code });
+export const disable2FA = () => api.post('/2fa/disable');
+export const generateBackupCodes = () => api.post('/users/generate-backup-codes');
+export const verifyMFAAndLogin = ({ mfaToken, code, backupCode }) => api.post('/auth/mfa/verify', { mfaToken, code, backupCode });
+
+// --- USER API CALLS ---
+export const getSecurityActivity = () => api.get('/users/security-activity');
+
+// --- ACCOUNT RECOVERY ---
+export const requestAccountRecovery = (email, reason) => api.post('/recovery/request-recovery', { email, reason });
+export const verifyRecoveryToken = (token) => api.post('/recovery/verify-recovery', { token });
+export const emergencyLogin = (token) => api.post('/recovery/emergency-login', { token });
+
+// --- REGENERATE BACKUP CODES ---
+export const regenerateBackupCodes = async (email, password) => {
+  try {
+    const response = await api.post('/auth/regenerate-backup-codes', { email, password });
+    return response.data;
+  } catch (error) {
+    if (error.response) return error.response.data;
+    if (error.request) return { success: false, error: 'Network unreachable.' };
+    return { success: false, error: 'Request setup failed' };
+  }
+};
+
+// --- ENHANCED RECOVERY ---
+export const generateCodesWithMethod = (method, verificationData) => api.post('/enhanced-recovery/generate-codes-methods', { method, verificationData });
+export const requestEmailVerification = () => api.post('/enhanced-recovery/request-email-verification');
+export const selfServiceRegenerate = (data) => api.post('/enhanced-recovery/self-service-regenerate', data);
+
+// Simple connectivity check
+export const healthCheck = () => api.get('/health');
 
 export default api;

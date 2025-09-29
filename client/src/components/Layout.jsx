@@ -28,7 +28,7 @@ const Layout = ({ children }) => {
                     {isManager && <NavLink to="/team" className="nav-link" title="Team"><Users size={22} /></NavLink>}
                 </nav>
                 <div className="sidebar-footer">
-                    <button className="nav-link" title="Settings"><Settings size={22} /></button>
+                    <NavLink to="/settings" className="nav-link" title="Settings"><Settings size={22} /></NavLink>
                     <button onClick={handleLogout} className="nav-link" title="Logout"><LogOut size={22} /></button>
                 </div>
             </aside>
