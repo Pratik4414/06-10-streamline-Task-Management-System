@@ -10,6 +10,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import AccountRecoveryPage from './pages/AccountRecoveryPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
+import ProjectDetailPage from './pages/ProjectDetailPage.jsx';
 import TasksPage from './pages/TasksPage.jsx';
 import TeamPage from './pages/TeamPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
@@ -33,6 +34,7 @@ function App() {
           {/* Protected Routes inside the main Layout */}
           <Route path="/dashboard" element={<ProtectedRoute><Layout><DashboardPage /></Layout></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute><Layout><ProjectsPage /></Layout></ProtectedRoute>} />
+          <Route path="/projects/:id" element={<ProtectedRoute><Layout><ProjectDetailPage /></Layout></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><Layout><TasksPage /></Layout></ProtectedRoute>} />
           <Route path="/team" element={<ProtectedRoute><Layout><TeamPage /></Layout></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />

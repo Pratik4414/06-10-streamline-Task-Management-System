@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Users, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Users, LogOut, Settings, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import './Layout.css';
 
@@ -19,21 +19,62 @@ const Layout = ({ children }) => {
         <div className="app-layout">
             <aside className="main-sidebar">
                 <div className="sidebar-header">
-                    <div className="logo">T</div>
+                    <div className="logo">
+                        <Zap size={28} />
+                    </div>
+                    <div className="company-name">Streamline</div>
+                    <div className="company-tagline">Task Management</div>
                 </div>
+                
                 <nav className="sidebar-nav">
-                    <NavLink to="/dashboard" className="nav-link" title="Dashboard"><LayoutDashboard size={22} /></NavLink>
-                    <NavLink to="/projects" className="nav-link" title="Projects"><FolderKanban size={22} /></NavLink>
-                    <NavLink to="/tasks" className="nav-link" title="Tasks"><CheckSquare size={22} /></NavLink>
-                    {isManager && <NavLink to="/team" className="nav-link" title="Team"><Users size={22} /></NavLink>}
+                    <div className="sidebar-section">
+                        <div className="section-title">Main</div>
+                        <NavLink to="/dashboard" className="nav-link">
+                            <LayoutDashboard className="nav-icon" />
+                            <span className="nav-text">Dashboard</span>
+                        </NavLink>
+                        <NavLink to="/projects" className="nav-link">
+                            <FolderKanban className="nav-icon" />
+                            <span className="nav-text">Projects</span>
+                        </NavLink>
+                        <NavLink to="/tasks" className="nav-link">
+                            <CheckSquare className="nav-icon" />
+                            <span className="nav-text">Tasks</span>
+                        </NavLink>
+                        {isManager && (
+                            <NavLink to="/team" className="nav-link">
+                                <Users className="nav-icon" />
+                                <span className="nav-text">Team</span>
+                            </NavLink>
+                        )}
+                    </div>
                 </nav>
+                
                 <div className="sidebar-footer">
-                    <NavLink to="/settings" className="nav-link" title="Settings"><Settings size={22} /></NavLink>
-                    <button onClick={handleLogout} className="nav-link" title="Logout"><LogOut size={22} /></button>
+                    <div className="user-profile">
+                        <div className="user-avatar">
+                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        <div className="user-info">
+                            <div className="user-name">{user?.name || 'User'}</div>
+                            <div className="user-role">{user?.role || 'employee'}</div>
+                        </div>
+                    </div>
+                    
+                    <NavLink to="/settings" className="nav-link">
+                        <Settings className="nav-icon" />
+                        <span className="nav-text">Settings</span>
+                    </NavLink>
+                    <button onClick={handleLogout} className="nav-link">
+                        <LogOut className="nav-icon" />
+                        <span className="nav-text">Logout</span>
+                    </button>
                 </div>
             </aside>
             <div className="content-wrapper">
-                {children}
+                <div className="content-inner">
+                    {children}
+                </div>
             </div>
         </div>
     );

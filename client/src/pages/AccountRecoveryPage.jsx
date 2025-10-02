@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { regenerateBackupCodes } from '../services/api';
+import EnhancedBackupCodes from '../components/EnhancedBackupCodes';
 import './AccountRecoveryPage.css';
 
 const AccountRecoveryPage = () => {
@@ -8,6 +9,7 @@ const AccountRecoveryPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showEnhancedModal, setShowEnhancedModal] = useState(false);
   
   // Password confirmation form
   const [email, setEmail] = useState('');
@@ -52,6 +54,23 @@ const AccountRecoveryPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle enhanced backup codes generation
+  const handleEnhancedCodesGenerated = (codes) => {
+    setNewBackupCodes(codes);
+    downloadBackupCodes(codes);
+    setSuccess('Enhanced backup codes generated successfully! You will be redirected to login page in 5 seconds.');
+    
+    setTimeout(() => {
+      navigate('/login', { 
+        state: { 
+          message: 'Please login with your credentials and one of the new backup codes.',
+          type: 'success'
+        }
+      });
+    }, 5000);
+    setShowEnhancedModal(false);
   };
 
   // Download backup codes as text file
@@ -132,6 +151,24 @@ Instructions:
             >
               {loading ? 'Generating Backup Codes...' : 'Generate New Backup Codes'}
             </button>
+            
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <span style={{ color: 'var(--muted)' }}>or</span>
+            </div>
+            
+            <button 
+              type="button" 
+              className="recovery-button enhanced"
+              onClick={() => setShowEnhancedModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)',
+                border: '1px solid #22c55e',
+                color: '#22c55e',
+                marginTop: '0.5rem'
+              }}
+            >
+              🛡️ Try Enhanced Recovery Options
+            </button>
           </form>
 
           <div className="recovery-info">
@@ -159,6 +196,13 @@ Instructions:
           </div>
         </div>
       </div>
+      
+      {showEnhancedModal && (
+        <EnhancedBackupCodes 
+          onCodesGenerated={handleEnhancedCodesGenerated}
+          onClose={() => setShowEnhancedModal(false)}
+        />
+      )}
     </div>
   );
 };

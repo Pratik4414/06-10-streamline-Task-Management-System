@@ -78,7 +78,15 @@ export const forgotPassword = async (email) => {
 
 // --- PROJECTS API CALLS ---
 export const getProjects = () => api.get('/projects');
+export const getProject = (id) => api.get(`/projects/${id}`);
 export const createProject = (projectData) => api.post('/projects', projectData);
+export const updateProject = (projectId, projectData) => api.put(`/projects/${projectId}`, projectData);
+export const deleteProject = (projectId) => api.delete(`/projects/${projectId}`);
+export const getProjectAnalytics = (projectId) => api.get(`/projects/${projectId}/analytics`);
+export const addProjectComment = (projectId, comment) => api.post(`/projects/${projectId}/comments`, { text: comment });
+export const uploadProjectFile = (projectId, formData) => api.post(`/projects/${projectId}/upload`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 
 // --- TASKS API CALLS ---
 export const getTasks = () => api.get('/tasks');
