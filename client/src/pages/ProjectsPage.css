@@ -2,65 +2,124 @@
 .page-container {
   animation: fadeIn 0.5s ease-in-out;
 }
-.page-header {
+/* Modern header and summary */
+.modern-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+}
+.modern-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.project-stats {
+  display: flex;
+  gap: 2rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+.project-stats span {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  padding: 0.3rem 1rem;
+  font-weight: 500;
+}
+.project-stats .ongoing { color: #8A63D2; }
+.project-stats .completed { color: #4BB543; }
+.project-stats .onhold { color: #EAB308; }
+
+/* Modern grid and cards */
+.modern-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2rem;
+}
+.modern-card {
+  background: var(--bg-secondary);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.modern-card:hover {
+  box-shadow: 0 4px 16px rgba(138,99,210,0.12);
+  transform: translateY(-2px) scale(1.01);
+}
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-}
-.page-header h1 {
-  font-size: 2.25rem;
-  font-weight: 700;
-}
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-.project-card {
-  background: var(--bg-secondary);
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 0.5rem;
 }
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  background: #ece9f6;
+  color: #8A63D2;
+}
+.status-badge.ongoing { background: #ede9fe; color: #8A63D2; }
+.status-badge.completed { background: #e7fbe7; color: #4BB543; }
+.status-badge.on-hold { background: #fef9c3; color: #EAB308; }
+.project-dates span { margin-right: 1rem; font-size: 0.9rem; color: #888; }
+.project-name { font-size: 1.35rem; margin: 0 0 0.5rem; font-weight: 700; }
+.project-description { color: var(--text-secondary); font-size: 1rem; margin-bottom: 1.2rem; flex-grow: 1; }
+.project-team-info {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  font-size: 0.98rem;
   margin-bottom: 1rem;
-  align-self: flex-start;
 }
-.status-badge.on-track { background-color: #166534; color: #dcfce7; }
-.status-badge.at-risk { background-color: #991b1b; color: #fee2e2; }
-.status-badge.completed { background-color: #3730a3; color: #e0e7ff; }
-.project-name { font-size: 1.25rem; margin: 0 0 0.5rem; }
-.project-description { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1; }
+.team-label, .manager-label { color: #8A63D2; font-weight: 600; }
+.team-name, .manager-name { color: #333; font-weight: 500; }
+.progress-section {
+  width: 80px;
+  margin: 0.5rem 0 1rem 0;
+  align-self: flex-end;
+}
+.progress-label {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 0.2rem;
+}
 .project-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
 }
-.member-avatars { display: flex; }
+.member-avatars { display: flex; gap: 0.3rem; }
 .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--accent-secondary);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.8rem;
-    border: 2px solid var(--bg-secondary);
-    margin-left: -10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--accent-secondary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  margin-right: 2px;
 }
+.avatar.more {
+  background: #8A63D2;
+  color: #fff;
+  font-size: 0.9rem;
+}
+/* Removed stray lines and fixed closing brace */
 .avatar:first-child { margin-left: 0; }
 .avatar.more { background-color: var(--bg-tertiary); color: var(--text-secondary); }
 .member-count { color: var(--text-secondary); font-size: 0.9rem; display: flex; align-items: center; gap: 0.25rem; }

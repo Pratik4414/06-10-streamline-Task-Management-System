@@ -6,25 +6,32 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
-// @desc    Get aggregated stats for the dashboard sidebar
+// @desc    Get aggregated stats for the dashboard sidebar and project-level analytics
 // @route   GET /api/reports/dashboard-stats
 // @access  Private
 router.get('/dashboard-stats', protect, async (req, res) => {
     try {
         const userId = req.user._id;
+        const { projectId } = req.query;
 
-        // 1. Get Completed Task counts for team members
+        let matchStage = {};
+        if (projectId) {
+            matchStage.project = new mongoose.Types.ObjectId(projectId);
+        }
+
+        // 1. Get Completed Task counts for team members (optionally filtered by project)
         const completedTasks = await Task.aggregate([
-            { $match: { status: 'Done' } },
+            { $match: { status: 'Done', ...matchStage } },
             { $group: { _id: '$assignedTo', tasks: { $sum: 1 } } },
             { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
             { $unwind: '$user' },
-            { $project: { name: '$user.name', tasks: 1, fill: '#8A63D2' } }, // Mapped for chart
+            { $project: { name: '$user.name', tasks: 1, fill: '#8A63D2' } },
             { $limit: 4 }
         ]);
 
         // 2. Calculate Efficiency (Completed Tasks / Total Tasks) for team members
         const allTasks = await Task.aggregate([
+            { $match: matchStage },
             { $group: { _id: '$assignedTo', total: { $sum: 1 } } },
             { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
             { $unwind: '$user' },
@@ -38,21 +45,21 @@ router.get('/dashboard-stats', protect, async (req, res) => {
             return {
                 name: userTasks.name,
                 value: efficiency,
-                fill: '#8A63D2' // Default color
+                fill: '#8A63D2'
             };
         });
 
-        // 3. Plan / Schedule (This is typically from a different collection, so we'll keep it as mock data for now)
-        const scheduleData = [
-            { time: '12:00 - 13:00', task: 'Lunch with the team' },
-            { time: '13:00 - 14:00', task: 'Project Alpha sync' },
-            { time: '14:00 - 15:00', task: 'Code review' },
-        ];
+        // 3. Burn-down chart data (tasks vs time)
+        const burnDownData = await Task.aggregate([
+            { $match: matchStage },
+            { $group: { _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, status: "$status" }, count: { $sum: 1 } } },
+            { $sort: { "_id.date": 1 } }
+        ]);
 
         res.json({
             completedTasksData: completedTasks,
             efficiencyData,
-            scheduleData
+            burnDownData
         });
 
     } catch (error) {

@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import http from "http";
+import { Server as SocketIO } from "socket.io";
 import mongoose from "mongoose";
 import cors from "cors";
 import passport from "passport";
@@ -19,11 +21,8 @@ import notificationRoutes from './routes/notifications.js';
 import securityRoutes from './routes/security.js';
 import twoFARoutes from './routes/2fa.js';
 
-const app = express();
-configurePassport(passport);
 
-// --- Core Middleware ---
-app.use(express.json());
+const app = express();
 // Allow common local dev origins; can be extended via ENV (comma-separated)
 const extraOrigins = (process.env.CORS_ORIGINS || '').split(',').filter(Boolean);
 const allowedOrigins = new Set([
@@ -33,6 +32,17 @@ const allowedOrigins = new Set([
   'http://127.0.0.1:3000',
   ...extraOrigins
 ]);
+const server = http.createServer(app);
+const io = new SocketIO(server, {
+  cors: {
+    origin: Array.from(allowedOrigins),
+    credentials: true
+  }
+});
+configurePassport(passport);
+
+// --- Core Middleware ---
+app.use(express.json());
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.has(origin)) return cb(null, true);
@@ -43,9 +53,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type','Authorization']
 }));
 
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.error("❌ DB Error", err));
+
+// --- Socket.io Project Chat ---
+io.on("connection", (socket) => {
+  socket.on("joinProject", (projectId) => {
+    socket.join(projectId);
+  });
+  socket.on("projectMessage", ({ projectId, userId, text, file }) => {
+    io.to(projectId).emit("projectMessage", { projectId, userId, text, file, timestamp: Date.now() });
+    // Optionally: Save to Message model here
+  });
+});
 
 app.use(passport.initialize());
 
@@ -55,6 +77,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes); // Use new routes
@@ -66,6 +89,12 @@ app.use("/api/enhanced-recovery", enhancedRecoveryRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/2fa', twoFARoutes);
+
+// --- Start Server ---
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
 // --- 404 Fallback (only for /api) ---
 app.use('/api', (req, res) => {
@@ -82,6 +111,3 @@ app.use((err, req, res, next) => {
   if (res.headersSent) return; // avoid double send
   res.status(500).json({ success: false, error: 'Internal server error' });
 });
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
