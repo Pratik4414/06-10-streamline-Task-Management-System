@@ -19,8 +19,6 @@ const RegisterPage = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [fieldTouched, setFieldTouched] = useState({});
   const [passwordStrength, setPasswordStrength] = useState({ level: 0, text: '', color: '' });
-  const [registrationComplete, setRegistrationComplete] = useState(false);
-  const [backupCodes, setBackupCodes] = useState([]);
 
   const { name, email, password, confirmPassword } = formData;
 
@@ -101,33 +99,69 @@ const RegisterPage = () => {
     setError('');
     setIsLoading(true);
 
-    const res = await registerUser({ name, email, password, role: selectedRole });
+    try {
+      const res = await registerUser({ name, email, password, role: selectedRole });
 
-    if (res.success) {
-      if (res.backupCodes && res.requiresBackupCodeDownload) {
-        // Handle automatic backup code generation
-        setBackupCodes(res.backupCodes);
-        setRegistrationComplete(true);
+      if (res.success) {
+        // Registration successful - generate and download backup codes
+        try {
+          const backupResponse = await fetch('http://localhost:5000/api/auth/generate-backup-codes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password })
+          });
+          
+          if (backupResponse.ok) {
+            const backupData = await backupResponse.json();
+            
+            if (backupData.success && backupData.backupCodes) {
+              // Auto-download backup codes
+              const content = `🔐 Backup Codes for Account Recovery
+Generated: ${new Date().toLocaleString()}
+Account: ${email}
+Name: ${name}
+
+⚠️ IMPORTANT: Save these codes in a secure location!
+Each code can only be used once for password recovery.
+
+${backupData.backupCodes.map((code, index) => `${index + 1}. ${code}`).join('\n')}
+
+📝 Instructions:
+- Use these codes when you forget your password
+- Click "Forgot Password?" on login page
+- Enter your email and one backup code
+- You'll be able to reset your password
+- Generate new codes before these run out
+
+🔒 Keep these codes secure and private!`;
+
+              const blob = new Blob([content], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `backup-codes-${email.split('@')[0]}.txt`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              
+              alert('Registration successful! Your backup codes have been downloaded automatically. Please keep them safe - you\'ll need them if you forget your password.');
+            }
+          }
+        } catch (backupError) {
+          console.log('Backup codes generation failed:', backupError);
+          alert('Registration successful! However, backup codes could not be generated. You can generate them later from the login page if needed.');
+        }
         
-        // Trigger automatic download
-        const blob = new Blob([res.backupCodes.join('\n')], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'backup-codes.txt';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        
-        setIsLoading(false);
-      } else {
-        // Legacy registration (shouldn't happen with new system)
-        alert('Registration successful! Please sign in.');
         navigate('/');
+      } else {
+        setError(res.error || 'Registration failed. Please try again.');
       }
-    } else {
-      setError(res.error || 'Registration failed. Please try again.');
+    } catch (error) {
+      setError('Registration failed. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -135,12 +169,10 @@ const RegisterPage = () => {
   return (
     <div className="register-container">
       <div className="register-card">
-        {!registrationComplete ? (
-          <>
-            <h2 className="register-title">Create your Account</h2>
-            <p className="register-subtitle">Join our platform to manage your tasks.</p>
+        <h2 className="register-title">Create your Account</h2>
+        <p className="register-subtitle">Join our platform to manage your tasks.</p>
 
-            <form onSubmit={handleSubmit} className="register-form">
+        <form onSubmit={handleSubmit} className="register-form">
               <div className="input-group">
                 <label htmlFor="name">Full Name</label>
                 <input 
@@ -295,47 +327,6 @@ const RegisterPage = () => {
                 Sign In
               </Link>
             </p>
-          </>
-        ) : (
-          // Registration complete - show backup codes
-          <>
-            <h2 className="register-title">🎉 Registration Complete!</h2>
-            <div className="backup-codes-success">
-              <div className="success-message">
-                <p><strong>Important:</strong> Your backup codes have been generated and downloaded automatically.</p>
-                <p>These 8 codes are required for login. Keep them safe!</p>
-              </div>
-              
-              <div className="backup-codes-display">
-                <h3>Your Backup Codes:</h3>
-                <div className="codes-grid">
-                  {backupCodes.map((code, index) => (
-                    <div key={index} className="code-item">{code}</div>
-                  ))}
-                </div>
-                <p className="code-warning">
-                  ⚠️ Each code can only be used once. Store them securely!
-                </p>
-              </div>
-              
-              <div className="next-steps">
-                <h3>Next Steps:</h3>
-                <ol>
-                  <li>Save the downloaded <code>backup-codes.txt</code> file in a secure location</li>
-                  <li>Consider printing a copy as backup</li>
-                  <li>You'll need one of these codes every time you log in</li>
-                </ol>
-              </div>
-              
-              <button 
-                className="continue-button" 
-                onClick={() => navigate('/')}
-              >
-                Continue to Login
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

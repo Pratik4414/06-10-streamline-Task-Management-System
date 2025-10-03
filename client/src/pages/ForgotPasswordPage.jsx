@@ -1,144 +1,201 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { forgotPassword } from '../services/api';
-import { validation } from '../utils/validation';
 import './ForgotPasswordPage.css';
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [backupCode, setBackupCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentStep, setCurrentStep] = useState(1); // 1: email+code, 2: password reset
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [fieldTouched, setFieldTouched] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [message, setMessage] = useState('');
 
-  // Handle email change with validation
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    setFieldTouched(prev => ({ ...prev, email: true }));
-    
-    const errors = validation.email(value);
-    setFieldErrors(prev => ({ ...prev, email: errors }));
-  };
-
-  // Handle field blur
-  const onBlur = () => {
-    setFieldTouched(prev => ({ ...prev, email: true }));
-  };
-
-  const handleSubmit = async (e) => {
+  // Step 1: Verify email and backup code
+  const handleVerifyCode = async (e) => {
     e.preventDefault();
     
-    // Mark field as touched
-    setFieldTouched({ email: true });
-    
-    // Validate email
-    const emailErrors = validation.email(email);
-    if (emailErrors.length > 0) {
-      setFieldErrors({ email: emailErrors });
-      setError('Please enter a valid email address.');
+    if (!email || !backupCode) {
+      setError('Email and backup code are required.');
       return;
     }
 
     setIsLoading(true);
     setError('');
-    setMessage('');
 
     try {
-      const res = await forgotPassword(email);
-
-      if (res.success) {
-        setMessage('Password reset instructions have been sent to your email address. Please check your inbox and follow the instructions to reset your password.');
-        setIsSubmitted(true);
-        setEmail('');
-        setFieldTouched({});
-        setFieldErrors({});
+      const response = await fetch('http://localhost:5000/api/auth/verify-backup-code-for-reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, backupCode })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setCurrentStep(2);
+        setMessage('Backup code verified! Please enter your new password.');
       } else {
-        setError(res.error || 'Failed to send reset email. Please try again.');
+        setError(data.error || 'Invalid email or backup code. Please try again.');
       }
     } catch (error) {
-      setError('An error occurred. Please try again later.');
+      setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBackToLogin = () => {
-    navigate('/');
-  };
+  // Step 2: Reset password
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    
+    if (!newPassword || !confirmPassword) {
+      setError('Please fill in all password fields.');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
 
-  const handleTryAgain = () => {
-    setIsSubmitted(false);
-    setMessage('');
+    setIsLoading(true);
     setError('');
-  };
 
-  if (isSubmitted) {
-    return (
-      <div className="forgot-password-container">
-        <div className="forgot-password-card">
-          <div className="success-content">
-            <div className="success-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="#10b981" strokeWidth="2"/>
-                <path d="M8 12l2 2 4-4" stroke="#10b981" strokeWidth="2" fill="none"/>
-              </svg>
-            </div>
-            <h2 className="success-title">Check Your Email</h2>
-            <p className="success-message">{message}</p>
-            <div className="success-actions">
-              <button onClick={handleBackToLogin} className="back-to-login-btn">
-                Back to Login
-              </button>
-              <button onClick={handleTryAgain} className="try-again-btn">
-                Send Another Email
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/reset-password-with-backup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email, 
+          backupCode, 
+          newPassword 
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('Password reset successful! Redirecting to login...');
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      } else {
+        setError(data.error || 'Failed to reset password. Please try again.');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="forgot-password-container">
       <div className="forgot-password-card">
-        <h2 className="forgot-password-title">Reset Your Password</h2>
-        <p className="forgot-password-subtitle">
-          Enter your email address and we'll send you instructions to reset your password.
-        </p>
+        {currentStep === 1 ? (
+          <>
+            <h2 className="forgot-password-title">Reset Your Password</h2>
+            <p className="forgot-password-subtitle">
+              Enter your email and one of your backup codes to reset your password.
+            </p>
 
-        <form onSubmit={handleSubmit} className="forgot-password-form">
-          <div className="input-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={handleEmailChange}
-              onBlur={onBlur}
-              placeholder="yourname@gmail.com or yourname@outlook.com"
-              className={fieldTouched.email && fieldErrors.email?.length > 0 ? 'error' : ''}
-              required
-            />
-            {fieldTouched.email && fieldErrors.email?.length > 0 && (
-              <div className="field-errors">
-                {fieldErrors.email.map((error, index) => (
-                  <span key={index} className="error-text">{error}</span>
-                ))}
+            <form onSubmit={handleVerifyCode} className="forgot-password-form">
+              <div className="input-group">
+                <label htmlFor="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your-email@example.com"
+                  required
+                />
               </div>
-            )}
-          </div>
+              
+              <div className="input-group">
+                <label htmlFor="backup-code">Backup Code</label>
+                <input
+                  type="text"
+                  id="backup-code"
+                  value={backupCode}
+                  onChange={(e) => setBackupCode(e.target.value)}
+                  placeholder="Enter one of your backup codes"
+                  required
+                />
+                <small className="form-hint">
+                  Use any of your backup codes that you downloaded during registration.
+                </small>
+              </div>
+              
+              {error && <p className="error-message">{error}</p>}
+              {message && <p className="success-message">{message}</p>}
+              
+              <button type="submit" className="verify-button" disabled={isLoading}>
+                {isLoading ? <div className="spinner"></div> : 'Verify & Continue'}
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <h2 className="forgot-password-title">Set New Password</h2>
+            <p className="forgot-password-subtitle">
+              Enter your new password below.
+            </p>
 
-          {error && <p className="error-message">{error}</p>}
-
-          <button type="submit" className="reset-button" disabled={isLoading}>
-            {isLoading ? <div className="spinner"></div> : 'Send Reset Instructions'}
-          </button>
-        </form>
+            <form onSubmit={handlePasswordReset} className="forgot-password-form">
+              <div className="input-group">
+                <label htmlFor="new-password">New Password</label>
+                <input
+                  type="password"
+                  id="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+              
+              <div className="input-group">
+                <label htmlFor="confirm-password">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirm-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+              
+              {error && <p className="error-message">{error}</p>}
+              {message && <p className="success-message">{message}</p>}
+              
+              <button type="submit" className="reset-button" disabled={isLoading}>
+                {isLoading ? <div className="spinner"></div> : 'Reset Password'}
+              </button>
+              
+              <button 
+                type="button" 
+                className="back-button" 
+                onClick={() => setCurrentStep(1)}
+              >
+                ← Back
+              </button>
+            </form>
+          </>
+        )}
 
         <div className="back-to-login">
           <Link to="/" className="back-link">

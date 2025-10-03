@@ -8,7 +8,11 @@ import './TasksPage.css';
 // --- Create Task Modal Component ---
 const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns }) => {
     const [error, setError] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false); // <-- Add loading state for the button
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Debug logging
+    console.log('CreateTaskModal - Projects available:', projects);
+    console.log('CreateTaskModal - Team members available:', team);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -51,11 +55,19 @@ const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns })
                     <input name="title" placeholder="Task Title" required />
                     <select name="project" required>
                         <option value="">Select Project</option>
-                        {projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                        {projects && projects.length > 0 ? (
+                            projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)
+                        ) : (
+                            <option disabled>No projects available</option>
+                        )}
                     </select>
                     <select name="assignedTo" required>
                         <option value="">Assign To</option>
-                        {team.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
+                        {team && team.length > 0 ? (
+                            team.map(m => <option key={m._id} value={m._id}>{m.name}</option>)
+                        ) : (
+                            <option disabled>No team members available</option>
+                        )}
                     </select>
                     <select name="priority" defaultValue="Medium">
                         <option>Low</option><option>Medium</option><option>High</option>
@@ -98,10 +110,14 @@ const TasksPage = () => {
             isManager ? getProjects() : Promise.resolve({ data: [] }),
             isManager ? getTeamMembers() : Promise.resolve({ data: [] })
         ]).then(([tasksRes, projectsRes, teamRes]) => {
-            setTasks(tasksRes);
-            setColumns(groupTasksByStatus(tasksRes));
-            setProjects(projectsRes.data);
-            setTeam(teamRes.data);
+            console.log('TasksPage - Raw responses:', { tasksRes, projectsRes, teamRes });
+            console.log('TasksPage - Projects data:', projectsRes.data);
+            console.log('TasksPage - Team data:', teamRes.data);
+            
+            setTasks(tasksRes.data || tasksRes);
+            setColumns(groupTasksByStatus(tasksRes.data || tasksRes));
+            setProjects(projectsRes.data || []);
+            setTeam(teamRes.data || []);
         }).catch(err => {
             console.error("Failed to load task page data", err);
         }).finally(() => {

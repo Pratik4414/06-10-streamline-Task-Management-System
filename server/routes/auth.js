@@ -51,29 +51,22 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ success: false, error: "User already exists" });
     }
 
-    // Generate backup codes for new user
-    const { plainCodes, hashedCodes } = await generateBackupCodes();
-
-    // Create a new user instance with backup codes
+    // Create a new user instance WITHOUT backup codes initially
     user = new User({ 
       name, 
       email, 
       password, 
-      role,
-      twoFactor: {
-        backupCodes: hashedCodes
-      }
+      role
+      // No backup codes generated here anymore
     });
     await user.save();
 
     try { await SecurityLog.create({ user: user._id, event: 'register', ip: req.ip, userAgent: req.headers['user-agent'] }); } catch {}
     
-    // Return success with backup codes for immediate download
+    // Return success - no backup codes needed
     res.status(201).json({ 
       success: true, 
-      message: "Registered successfully",
-      backupCodes: plainCodes,
-      requiresBackupCodeDownload: true
+      message: "Registration successful! Please login with your credentials."
     });
   } catch (err) {
     console.error("Registration Error:", err.message);
@@ -96,7 +89,7 @@ router.post("/login", async (req, res) => {
       return res.status(500).json({ success: false, error: 'Server configuration error' });
     }
     const user = await User.findOne({ email });
-    if (!user || !user.password) { // Check if user exists and has a password (i.e., not a Google-only user)
+    if (!user || !user.password) {
       return res.status(400).json({ success: false, error: "Invalid credentials" });
     }
 
@@ -110,67 +103,30 @@ router.post("/login", async (req, res) => {
       return res.status(500).json({ success: false, error: "Server error during password verification" });
     }
 
-    // Check if user has backup codes
-    const hasBackupCodes = user.twoFactor?.backupCodes && user.twoFactor.backupCodes.length > 0;
-    
-    if (!hasBackupCodes) {
-      // New user without backup codes - provide temporary access with mandate to set up codes
-      const gracePeriodToken = jwt.sign({ 
-        user: { id: user.id, role: user.role },
-        gracePeriod: true,
-        mustSetupBackupCodes: true
-      }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      
-      SecurityLog.create({ 
-        user: user._id, 
-        event: 'login_grace_period', 
-        ip: req.ip, 
-        userAgent: req.headers['user-agent'] 
-      }).catch(()=>{});
-      
-      return res.json({ 
-        success: true, 
-        token: gracePeriodToken,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
-        gracePeriod: true,
-        mustSetupBackupCodes: true,
-        message: "Please set up backup codes immediately for security."
-      });
-    }
-    
-    // Step 1: Password verified, now require backup code (for users with codes)
-    const tempToken = jwt.sign({ 
-      step: 'password-verified', 
-      userId: user.id, 
-      email: user.email 
-    }, process.env.JWT_SECRET, { expiresIn: '10m' });
-    
-    SecurityLog.create({ 
-      user: user._id, 
-      event: 'login_password_verified', 
-      ip: req.ip, 
-      userAgent: req.headers['user-agent'] 
-    }).catch(()=>{});
-    
-    return res.json({ 
-      success: true, 
-      passwordVerified: true, 
-      requiresBackupCode: true,
-      tempToken: tempToken
+    // Direct login - no backup code required
+    const securityActivity = new SecurityActivity({
+      userId: user._id,
+      loginTime: new Date()
     });
+    await securityActivity.save();
 
-    // Create JWT Payload
     const payload = {
       user: {
         id: user.id,
         role: user.role,
       },
+      activityId: securityActivity._id
     };
 
-    // Sign the token
     try {
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-      SecurityLog.create({ user: user._id, event: 'login', ip: req.ip, userAgent: req.headers['user-agent'] }).catch(() => {});
+      SecurityLog.create({ 
+        user: user._id, 
+        event: 'login_success', 
+        ip: req.ip, 
+        userAgent: req.headers['user-agent'] 
+      }).catch(() => {});
+      
       return res.json({
         success: true,
         token,
@@ -456,6 +412,88 @@ router.post("/reset-password", protect, async (req, res) => {
 
 
 
+// --- Regenerate backup codes with backup code verification ---
+router.post('/regenerate-backup-codes-with-code', async (req, res) => {
+  try {
+    const { email, backupCode } = req.body;
+
+    if (!email || !backupCode) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and backup code are required'
+      });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'No account found with this email address'
+      });
+    }
+
+    // Check if user has backup codes
+    if (!user.twoFactor?.backupCodes || user.twoFactor.backupCodes.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No backup codes found for this account'
+      });
+    }
+
+    // Verify the provided backup code
+    let matchedCodeIndex = -1;
+    for (let i = 0; i < user.twoFactor.backupCodes.length; i++) {
+      const codeObj = user.twoFactor.backupCodes[i];
+      if (!codeObj.isUsed) {
+        const isMatch = await bcrypt.compare(backupCode, codeObj.codeHash);
+        if (isMatch) {
+          matchedCodeIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (matchedCodeIndex === -1) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid or already used backup code'
+      });
+    }
+
+    // Generate new backup codes
+    const { plainCodes, hashedCodes } = await generateBackupCodes();
+
+    // Update user with new backup codes and mark used code
+    user.twoFactor.backupCodes[matchedCodeIndex].isUsed = true;
+    user.twoFactor.backupCodes = hashedCodes;
+    await user.save();
+
+    // Log the backup code regeneration
+    SecurityLog.create({ 
+      user: user._id, 
+      event: 'backup_codes_regenerated_with_code', 
+      ip: req.ip, 
+      userAgent: req.headers['user-agent'] 
+    }).catch(() => {});
+
+    console.log(`✅ Backup codes regenerated using backup code for user: ${email}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'New backup codes generated successfully',
+      backupCodes: plainCodes
+    });
+
+  } catch (error) {
+    console.error('Error regenerating backup codes with code:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
 // --- Regenerate backup codes with password confirmation ---
 router.post('/regenerate-backup-codes', async (req, res) => {
   try {
@@ -562,5 +600,196 @@ router.get(
   }
 );
 
+// --- Generate backup codes after registration ---
+router.post('/generate-backup-codes', async (req, res) => {
+  const { email, password } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Email and password are required' 
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    // Verify password
+    const passwordValid = await argon2.verify(user.password, password);
+    if (!passwordValid) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid password' 
+      });
+    }
+
+    // Generate backup codes
+    const { plainCodes, hashedCodes } = await generateBackupCodes();
+
+    // Save to user
+    user.twoFactor = {
+      backupCodes: hashedCodes
+    };
+    await user.save();
+
+    res.json({ 
+      success: true, 
+      backupCodes: plainCodes 
+    });
+  } catch (error) {
+    console.error('Generate backup codes error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to generate backup codes' 
+    });
+  }
+});
+
+// --- Verify backup code for password reset ---
+router.post('/verify-backup-code-for-reset', async (req, res) => {
+  const { email, backupCode } = req.body;
+  
+  if (!email || !backupCode) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Email and backup code are required' 
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    if (!user.twoFactor?.backupCodes || user.twoFactor.backupCodes.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No backup codes available for this account' 
+      });
+    }
+
+    // Check if backup code is valid
+    let validCodeFound = false;
+    for (const codeObj of user.twoFactor.backupCodes) {
+      if (!codeObj.isUsed) {
+        const isValid = await bcrypt.compare(backupCode, codeObj.codeHash);
+        if (isValid) {
+          validCodeFound = true;
+          break;
+        }
+      }
+    }
+
+    if (!validCodeFound) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid backup code' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Backup code verified. You can now reset your password.' 
+    });
+  } catch (error) {
+    console.error('Verify backup code error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to verify backup code' 
+    });
+  }
+});
+
+// --- Reset password with backup code ---
+router.post('/reset-password-with-backup', async (req, res) => {
+  const { email, backupCode, newPassword } = req.body;
+  
+  if (!email || !backupCode || !newPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Email, backup code, and new password are required' 
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Password must be at least 6 characters long' 
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    if (!user.twoFactor?.backupCodes || user.twoFactor.backupCodes.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No backup codes available for this account' 
+      });
+    }
+
+    // Find and mark the backup code as used
+    let validCodeIndex = -1;
+    for (let i = 0; i < user.twoFactor.backupCodes.length; i++) {
+      const codeObj = user.twoFactor.backupCodes[i];
+      if (!codeObj.isUsed) {
+        const isValid = await bcrypt.compare(backupCode, codeObj.codeHash);
+        if (isValid) {
+          validCodeIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (validCodeIndex === -1) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid or already used backup code' 
+      });
+    }
+
+    // Mark backup code as used
+    user.twoFactor.backupCodes[validCodeIndex].isUsed = true;
+
+    // Hash and save new password
+    user.password = await argon2.hash(newPassword);
+    await user.save();
+
+    // Log security activity
+    SecurityLog.create({ 
+      user: user._id, 
+      event: 'password_reset_with_backup', 
+      ip: req.ip, 
+      userAgent: req.headers['user-agent'] 
+    }).catch(() => {});
+
+    res.json({ 
+      success: true, 
+      message: 'Password reset successful' 
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to reset password' 
+    });
+  }
+});
 
 export default router;

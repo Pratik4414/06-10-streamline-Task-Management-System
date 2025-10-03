@@ -134,9 +134,9 @@ export const verifyRecoveryToken = (token) => api.post('/recovery/verify-recover
 export const emergencyLogin = (token) => api.post('/recovery/emergency-login', { token });
 
 // --- REGENERATE BACKUP CODES ---
-export const regenerateBackupCodes = async (email, password) => {
+export const regenerateBackupCodes = async (email, backupCode) => {
   try {
-    const response = await api.post('/auth/regenerate-backup-codes', { email, password });
+    const response = await api.post('/auth/regenerate-backup-codes-with-code', { email, backupCode });
     return response.data;
   } catch (error) {
     if (error.response) return error.response.data;
