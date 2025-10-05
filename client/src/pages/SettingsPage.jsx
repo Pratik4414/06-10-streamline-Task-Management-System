@@ -15,11 +15,11 @@ function setThemeMode(mode) {
   if (mode === 'light') {
     root.setAttribute('data-theme', 'light');
   } else if (mode === 'dark') {
-    root.removeAttribute('data-theme'); // default is dark
+    root.setAttribute('data-theme', 'dark');
   } else if (mode === 'system') {
     const mql = window.matchMedia('(prefers-color-scheme: dark)');
     if (mql.matches) {
-      root.removeAttribute('data-theme');
+      root.setAttribute('data-theme', 'dark');
     } else {
       root.setAttribute('data-theme', 'light');
     }

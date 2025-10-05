@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getTasks, createTask, getProjects, getTeamMembers, deleteTask } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Plus, X, Trash2 } from 'lucide-react';
+import { Plus, X, Trash2, Edit, FileText } from 'lucide-react';
+import UpdateTaskStatus from '../components/UpdateTaskStatus.jsx';
+import SubmitReport from '../components/SubmitReport.jsx';
 import './TasksPage.css';
 
 // --- Create Task Modal Component ---
@@ -91,6 +93,9 @@ const TasksPage = () => {
     const [projects, setProjects] = useState([]);
     const [team, setTeam] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const isManager = user?.role === 'manager';
 
@@ -123,6 +128,16 @@ const TasksPage = () => {
         }
     };
 
+    const handleUpdateTask = (updatedTask) => {
+        setTasks(prevTasks => prevTasks.map(t => t._id === updatedTask._id ? updatedTask : t));
+        setColumns(groupTasksByStatus(tasks.map(t => t._id === updatedTask._id ? updatedTask : t)));
+    };
+
+    const handleSubmitReport = async (reportData) => {
+        console.log('Report submitted:', reportData);
+        alert('Report submitted successfully! Your manager will review it soon.');
+    };
+    
     useEffect(() => {
         setIsLoading(true);
         Promise.all([
@@ -164,15 +179,41 @@ const TasksPage = () => {
                                 <div key={task._id} className="kanban-task">
                                     <div className="task-header-row">
                                         <p className="task-title">{task.title}</p>
-                                        {isManager && status === 'To Do' && (
-                                            <button 
-                                                className="task-delete-btn"
-                                                onClick={() => handleDeleteTask(task._id)}
-                                                title="Delete task"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        )}
+                                        <div className="task-actions">
+                                            {isManager && status === 'To Do' && (
+                                                <button 
+                                                    className="task-action-btn delete-btn"
+                                                    onClick={() => handleDeleteTask(task._id)}
+                                                    title="Delete task"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                            {!isManager && (
+                                                <>
+                                                    <button 
+                                                        className="task-action-btn update-btn"
+                                                        onClick={() => {
+                                                            setSelectedTask(task);
+                                                            setShowUpdateModal(true);
+                                                        }}
+                                                        title="Update status"
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button 
+                                                        className="task-action-btn report-btn"
+                                                        onClick={() => {
+                                                            setSelectedTask(task);
+                                                            setShowReportModal(true);
+                                                        }}
+                                                        title="Submit report"
+                                                    >
+                                                        <FileText size={16} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="task-footer">
                                         <div className="assignee-info">
@@ -187,6 +228,26 @@ const TasksPage = () => {
                 ))}
             </div>
             {showCreateModal && <CreateTaskModal projects={projects} team={team} setShowModal={setShowCreateModal} setTasks={setTasks} setColumns={setColumns} />}
+            {showUpdateModal && selectedTask && (
+                <UpdateTaskStatus 
+                    task={selectedTask}
+                    onUpdate={handleUpdateTask}
+                    onClose={() => {
+                        setShowUpdateModal(false);
+                        setSelectedTask(null);
+                    }}
+                />
+            )}
+            {showReportModal && selectedTask && (
+                <SubmitReport
+                    task={selectedTask}
+                    onSubmit={handleSubmitReport}
+                    onClose={() => {
+                        setShowReportModal(false);
+                        setSelectedTask(null);
+                    }}
+                />
+            )}
         </div>
     );
 };

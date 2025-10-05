@@ -80,6 +80,15 @@ html, body, #root {
   --radius-lg: 12px;
   --radius-xl: 16px;
   
+  /* Aliases for compatibility */
+  --surface: var(--bg-secondary);
+  --surface-hover: var(--bg-tertiary);
+  --bg: var(--bg-primary);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --border: var(--border-color);
+  --accent: var(--text-accent);
+  
   color: var(--text-primary);
   background-color: var(--bg-primary);
   font-synthesis: none;
@@ -107,6 +116,45 @@ html, body, #root {
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  
+  /* Aliases for compatibility */
+  --surface: var(--bg-secondary);
+  --surface-hover: var(--bg-tertiary);
+  --bg: var(--bg-primary);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --border: var(--border-color);
+  --accent: var(--text-accent);
+}
+
+/* Light theme (explicit for toggle) */
+[data-theme="light"] {
+  --bg-primary: var(--gray-50);
+  --bg-secondary: #ffffff;
+  --bg-tertiary: var(--gray-100);
+  --bg-accent: var(--primary-50);
+  
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-tertiary: var(--gray-500);
+  --text-accent: var(--primary-600);
+  
+  --border-color: var(--gray-200);
+  --border-focus: var(--primary-500);
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Aliases for compatibility */
+  --surface: var(--bg-secondary);
+  --surface-hover: var(--bg-tertiary);
+  --bg: var(--bg-primary);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --border: var(--border-color);
+  --accent: var(--text-accent);
 }
 
 a {

@@ -14,6 +14,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage.jsx';
 import TasksPage from './pages/TasksPage.jsx';
 import TeamPage from './pages/TeamPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import NotificationsPage from './pages/NotificationsPage.jsx';
 
 // Component Imports with .jsx extension
 import Layout from './components/Layout.jsx';
@@ -36,6 +37,7 @@ function App() {
           <Route path="/projects" element={<ProtectedRoute><Layout><ProjectsPage /></Layout></ProtectedRoute>} />
           <Route path="/projects/:id" element={<ProtectedRoute><Layout><ProjectDetailPage /></Layout></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute><Layout><TasksPage /></Layout></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><Layout><NotificationsPage /></Layout></ProtectedRoute>} />
           <Route path="/team" element={<ProtectedRoute><Layout><TeamPage /></Layout></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
         </Routes>

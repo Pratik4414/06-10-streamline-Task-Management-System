@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, CheckSquare, Users, LogOut, Settings, Zap } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, Users, LogOut, Settings, Zap, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import './Layout.css';
 
@@ -40,6 +40,10 @@ const Layout = ({ children }) => {
                         <NavLink to="/tasks" className="nav-link">
                             <CheckSquare className="nav-icon" />
                             <span className="nav-text">Tasks</span>
+                        </NavLink>
+                        <NavLink to="/notifications" className="nav-link">
+                            <Bell className="nav-icon" />
+                            <span className="nav-text">Notifications</span>
                         </NavLink>
                         {isManager && (
                             <NavLink to="/team" className="nav-link">

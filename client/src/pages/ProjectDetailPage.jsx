@@ -24,8 +24,10 @@ import {
   AlertCircle,
   Play,
   Pause,
-  Flag
+  Flag,
+  TrendingUp
 } from 'lucide-react';
+import MonitorProgress from '../components/MonitorProgress';
 import './ProjectDetailPage.css';
 
 const ProjectDetailPage = () => {
@@ -38,6 +40,7 @@ const ProjectDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showMonitorProgress, setShowMonitorProgress] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
   const isManager = user?.role === 'manager';
@@ -50,6 +53,8 @@ const ProjectDetailPage = () => {
     try {
       setIsLoading(true);
       
+      console.log('🔍 ProjectDetailPage - Fetching project ID:', projectId);
+      
       // Try to fetch real data first
       try {
         const projectData = await getProject(projectId);
@@ -58,6 +63,7 @@ const ProjectDetailPage = () => {
         if (projectData && projectData.data) {
           setProject(projectData.data);
           setTasks(projectTasks.data || []);
+          console.log('✅ Loaded real project data:', projectData.data.name);
           return;
         }
       } catch (apiError) {
@@ -563,6 +569,9 @@ const ProjectDetailPage = () => {
       const selectedProject = demoProjects[projectId] || demoProjects['default'];
       const selectedTasks = demoTasks[projectId] || demoTasks['default'];
       
+      console.log('📊 Demo data selected for project:', selectedProject.name, '| Project ID:', projectId);
+      console.log('🎯 Using fallback?', !demoProjects[projectId]);
+      
       setProject(selectedProject);
       setTasks(selectedTasks);
       
@@ -724,11 +733,18 @@ const ProjectDetailPage = () => {
           {isManager && (
             <div className="project-actions">
               <button 
+                onClick={() => setShowMonitorProgress(true)}
+                className="action-btn monitor-btn"
+              >
+                <TrendingUp size={18} />
+                Monitor Progress
+              </button>
+              <button 
                 onClick={fetchAnalytics}
                 className="action-btn analytics-btn"
               >
                 <BarChart3 size={18} />
-                View Analytics
+                Review Reports
               </button>
               <button 
                 onClick={() => navigate(`/projects/${projectId}/edit`)}
@@ -929,7 +945,7 @@ const ProjectDetailPage = () => {
             <div className="modal-header">
               <h2>
                 <BarChart3 size={24} />
-                {project.name} - Analytics
+                {project.name} - Analytics & Reports
               </h2>
               <button 
                 className="close-btn" 
@@ -946,19 +962,19 @@ const ProjectDetailPage = () => {
                   <div className="task-stats">
                     <div className="stat-item">
                       <span className="stat-label">Total Tasks</span>
-                      <span className="stat-value">{analytics.totalTasks}</span>
+                      <span className="stat-value">{analytics.totalTasks || tasks.length}</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">Completed</span>
-                      <span className="stat-value completed">{analytics.completedTasks}</span>
+                      <span className="stat-value completed">{analytics.completedTasks || tasks.filter(t => t.status === 'Done').length}</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">In Progress</span>
-                      <span className="stat-value in-progress">{analytics.inProgressTasks}</span>
+                      <span className="stat-value in-progress">{analytics.inProgressTasks || tasks.filter(t => t.status === 'In Progress').length}</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">To Do</span>
-                      <span className="stat-value todo">{analytics.todoTasks}</span>
+                      <span className="stat-value todo">{analytics.todoTasks || tasks.filter(t => t.status === 'To Do').length}</span>
                     </div>
                   </div>
                 </div>
@@ -968,16 +984,86 @@ const ProjectDetailPage = () => {
                   <div className="time-stats">
                     <div className="stat-item">
                       <span className="stat-label">Estimated Hours</span>
-                      <span className="stat-value">{analytics.estimatedHours}h</span>
+                      <span className="stat-value">{analytics.estimatedHours || project.estimatedHours || 0}h</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-label">Actual Hours</span>
-                      <span className="stat-value">{analytics.actualHours}h</span>
+                      <span className="stat-value">{analytics.actualHours || project.actualHours || 0}h</span>
                     </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Remaining Hours</span>
+                      <span className="stat-value">{(analytics.estimatedHours || project.estimatedHours || 0) - (analytics.actualHours || project.actualHours || 0)}h</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Efficiency</span>
+                      <span className="stat-value">{analytics.efficiency || Math.round(((project.estimatedHours || 1) / (project.actualHours || 1)) * 100)}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="analytics-card">
+                  <h4>Team Performance</h4>
+                  <div className="team-performance-list">
+                    {(analytics.teamPerformance || [
+                      { name: 'Alice Developer', tasksCompleted: 8, hoursLogged: 156, efficiency: 95 },
+                      { name: 'Bob Designer', tasksCompleted: 6, hoursLogged: 120, efficiency: 88 }
+                    ]).map((member, idx) => (
+                      <div key={idx} className="performance-item">
+                        <div className="performance-name">{member.name}</div>
+                        <div className="performance-stats">
+                          <span>{member.tasksCompleted} tasks</span>
+                          <span>{member.hoursLogged}h logged</span>
+                          <span className={`efficiency ${member.efficiency >= 90 ? 'high' : 'medium'}`}>
+                            {member.efficiency}% efficiency
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="analytics-card">
+                  <h4>Milestones</h4>
+                  <div className="milestones-list">
+                    {(analytics.milestones || [
+                      { name: 'Requirements Analysis', completed: true, date: '2024-09-20' },
+                      { name: 'UI/UX Design', completed: true, date: '2024-10-05' },
+                      { name: 'Core Development', completed: false, date: '2024-11-15' },
+                      { name: 'Testing Phase', completed: false, date: '2024-11-25' }
+                    ]).map((milestone, idx) => (
+                      <div key={idx} className={`milestone-item ${milestone.completed ? 'completed' : 'pending'}`}>
+                        <CheckCircle2 size={18} />
+                        <div className="milestone-info">
+                          <span className="milestone-name">{milestone.name}</span>
+                          <span className="milestone-date">{new Date(milestone.date).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Monitor Progress Modal */}
+      {showMonitorProgress && (
+        <div className="modal-backdrop" onClick={() => setShowMonitorProgress(false)}>
+          <div className="modal-content monitor-progress-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <TrendingUp size={24} />
+                Monitor Progress - {project.name}
+              </h2>
+              <button 
+                className="close-btn" 
+                onClick={() => setShowMonitorProgress(false)}
+              >
+                ×
+              </button>
+            </div>
+            <MonitorProgress project={project} tasks={tasks} />
           </div>
         </div>
       )}

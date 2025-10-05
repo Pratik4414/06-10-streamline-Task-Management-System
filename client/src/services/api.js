@@ -91,7 +91,9 @@ export const uploadProjectFile = (projectId, formData) => api.post(`/projects/${
 // --- TASKS API CALLS ---
 export const getTasks = () => api.get('/tasks');
 export const createTask = (taskData) => api.post('/tasks', taskData);
+export const updateTask = (taskId, taskData) => api.put(`/tasks/${taskId}`, taskData);
 export const deleteTask = (taskId) => api.delete(`/tasks/${taskId}`);
+export const submitTaskReport = (taskId, reportData) => api.post(`/tasks/${taskId}/report`, reportData);
 
 // --- TEAM API CALLS (Manager Only) ---
 export const getTeamMembers = () => api.get('/team');
@@ -150,6 +152,11 @@ export const regenerateBackupCodes = async (email, backupCode) => {
 export const generateCodesWithMethod = (method, verificationData) => api.post('/enhanced-recovery/generate-codes-methods', { method, verificationData });
 export const requestEmailVerification = () => api.post('/enhanced-recovery/request-email-verification');
 export const selfServiceRegenerate = (data) => api.post('/enhanced-recovery/self-service-regenerate', data);
+
+// --- NOTIFICATIONS API CALLS ---
+export const getNotifications = () => api.get('/notifications');
+export const markNotificationAsRead = (notificationId) => api.put(`/notifications/${notificationId}/read`);
+export const markAllNotificationsAsRead = () => api.put('/notifications/read-all');
 
 // Simple connectivity check
 export const healthCheck = () => api.get('/health');

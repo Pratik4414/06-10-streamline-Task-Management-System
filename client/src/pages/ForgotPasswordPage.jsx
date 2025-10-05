@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { validation, getPasswordStrength } from '../utils/validation';
 import './ForgotPasswordPage.css';
 
 const ForgotPasswordPage = () => {
@@ -12,6 +13,9 @@ const ForgotPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [fieldTouched, setFieldTouched] = useState({});
+  const [passwordStrength, setPasswordStrength] = useState({ level: 0, text: '', color: '' });
 
   // Step 1: Verify email and backup code
   const handleVerifyCode = async (e) => {
@@ -49,22 +53,41 @@ const ForgotPasswordPage = () => {
     }
   };
 
+  // Handle password change with validation
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setNewPassword(value);
+    setFieldTouched(prev => ({ ...prev, newPassword: true }));
+    const errors = validation.password(value);
+    setFieldErrors(prev => ({ ...prev, newPassword: errors }));
+    setPasswordStrength(getPasswordStrength(value));
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    setFieldTouched(prev => ({ ...prev, confirmPassword: true }));
+    const errors = validation.confirmPassword(newPassword, value);
+    setFieldErrors(prev => ({ ...prev, confirmPassword: errors }));
+  };
+
   // Step 2: Reset password
   const handlePasswordReset = async (e) => {
     e.preventDefault();
     
-    if (!newPassword || !confirmPassword) {
-      setError('Please fill in all password fields.');
-      return;
-    }
+    // Mark fields as touched
+    setFieldTouched({ newPassword: true, confirmPassword: true });
     
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
+    // Validate passwords
+    const passwordErrors = validation.password(newPassword);
+    const confirmErrors = validation.confirmPassword(newPassword, confirmPassword);
     
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (passwordErrors.length > 0 || confirmErrors.length > 0) {
+      setFieldErrors({
+        newPassword: passwordErrors,
+        confirmPassword: confirmErrors
+      });
+      setError('Please fix the validation errors above.');
       return;
     }
 
@@ -161,10 +184,35 @@ const ForgotPasswordPage = () => {
                   type="password"
                   id="new-password"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={handlePasswordChange}
+                  onBlur={() => setFieldTouched(prev => ({ ...prev, newPassword: true }))}
                   placeholder="Enter new password"
+                  className={fieldTouched.newPassword && fieldErrors.newPassword?.length > 0 ? 'error' : ''}
                   required
                 />
+                {fieldTouched.newPassword && fieldErrors.newPassword?.length > 0 && (
+                  <div className="field-errors">
+                    {fieldErrors.newPassword.map((error, index) => (
+                      <span key={index} className="error-text">{error}</span>
+                    ))}
+                  </div>
+                )}
+                {newPassword && (
+                  <div className="password-strength">
+                    <div className="strength-bar">
+                      <div 
+                        className={`strength-fill strength-${passwordStrength.level}`}
+                        style={{ width: `${(passwordStrength.level / 4) * 100}%` }}
+                      />
+                    </div>
+                    <span className={`strength-text strength-${passwordStrength.level}`}>
+                      {passwordStrength.text}
+                    </span>
+                  </div>
+                )}
+                <small className="form-hint">
+                  Password must be at least 8 characters with uppercase, lowercase, number, and special character.
+                </small>
               </div>
               
               <div className="input-group">
@@ -173,10 +221,19 @@ const ForgotPasswordPage = () => {
                   type="password"
                   id="confirm-password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={handleConfirmPasswordChange}
+                  onBlur={() => setFieldTouched(prev => ({ ...prev, confirmPassword: true }))}
                   placeholder="Confirm new password"
+                  className={fieldTouched.confirmPassword && fieldErrors.confirmPassword?.length > 0 ? 'error' : ''}
                   required
                 />
+                {fieldTouched.confirmPassword && fieldErrors.confirmPassword?.length > 0 && (
+                  <div className="field-errors">
+                    {fieldErrors.confirmPassword.map((error, index) => (
+                      <span key={index} className="error-text">{error}</span>
+                    ))}
+                  </div>
+                )}
               </div>
               
               {error && <p className="error-message">{error}</p>}
