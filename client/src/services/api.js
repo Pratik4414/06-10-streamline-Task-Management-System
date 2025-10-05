@@ -91,6 +91,7 @@ export const uploadProjectFile = (projectId, formData) => api.post(`/projects/${
 // --- TASKS API CALLS ---
 export const getTasks = () => api.get('/tasks');
 export const createTask = (taskData) => api.post('/tasks', taskData);
+export const deleteTask = (taskId) => api.delete(`/tasks/${taskId}`);
 
 // --- TEAM API CALLS (Manager Only) ---
 export const getTeamMembers = () => api.get('/team');

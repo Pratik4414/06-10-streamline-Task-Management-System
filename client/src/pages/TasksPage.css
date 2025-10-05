@@ -37,10 +37,39 @@
   cursor: grab;
   border-left: 3px solid var(--accent-secondary);
 }
+
+.task-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
 .task-title {
   font-weight: 500;
-  margin: 0 0 1rem;
+  margin: 0;
   color: var(--text-primary);
+  flex: 1;
+}
+
+.task-delete-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border-radius: 6px;
+  padding: 0.35rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.task-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  transform: scale(1.05);
 }
 
 .task-footer {

@@ -64,43 +64,44 @@ const ProjectDetailPage = () => {
         console.log('API call failed, using demo data:', apiError);
       }
       
-      // Fallback to realistic demo data for presentation
+      // Fallback to realistic demo data for presentation - map by actual project IDs from DB
       const demoProjects = {
-        '68df8b1c9e397bd47a09f74': {
-          _id: '68df8b1c9e397bd47a09f74',
-          name: 'E-commerce Website Development',
-          description: 'Complete e-commerce platform with modern UI, payment integration, and admin dashboard. This project involves building a scalable online store with advanced features like real-time inventory management, customer analytics, and mobile responsiveness.',
+        '68e0f0edfec5a3b5fb390575': {
+          _id: '68e0f0edfec5a3b5fb390575',
+          name: 'E-commerce Website',
+          description: 'Build a modern e-commerce platform with React and Node.js featuring secure payment processing, real-time inventory management, customer analytics dashboard, and mobile-responsive design. The platform will support multiple payment gateways including Stripe and PayPal, advanced product filtering, wishlist functionality, and admin panel for order management.',
           status: 'Ongoing',
           priority: 'High',
           progress: 65,
+          deadline: '2025-12-15T00:00:00.000Z',
           startDate: '2024-10-01T00:00:00.000Z',
-          endDate: '2024-12-15T00:00:00.000Z',
+          endDate: '2025-12-15T00:00:00.000Z',
           estimatedHours: 480,
           actualHours: 312,
-          teamMembers: [
-            { _id: '1', name: 'Alice Johnson', role: 'Frontend Developer', email: 'alice.dev@gmail.com' },
-            { _id: '2', name: 'Bob Smith', role: 'UI/UX Designer', email: 'bob.design@outlook.com' },
-            { _id: '3', name: 'Carol Davis', role: 'QA Tester', email: 'carol.test@yahoo.com' }
+          members: [
+            { _id: '1', user: { _id: '1', name: 'Alice Developer', email: 'alice.dev@gmail.com' }, role: 'Lead Developer' },
+            { _id: '2', user: { _id: '2', name: 'Bob Designer', email: 'bob.design@outlook.com' }, role: 'UI/UX Designer' },
+            { _id: '3', user: { _id: '3', name: 'Carol Tester', email: 'carol.test@yahoo.com' }, role: 'QA Engineer' }
           ],
           manager: { _id: 'manager1', name: 'John Manager', email: 'john.manager@gmail.com' },
-          tags: ['React', 'Node.js', 'MongoDB', 'Stripe API', 'AWS'],
+          tags: ['React', 'Node.js', 'MongoDB', 'Stripe API', 'AWS', 'Payment Gateway'],
           comments: [
             {
               _id: 'comment1',
               user: { name: 'John Manager', role: 'Manager' },
-              text: 'Great progress on the frontend! The product catalog looks fantastic. Let\'s focus on the payment integration next.',
+              text: 'Great progress on the frontend! The product catalog looks fantastic with the new filtering system. Let\'s focus on the payment integration next week.',
               createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
             },
             {
               _id: 'comment2',
-              user: { name: 'Alice Johnson', role: 'Developer' },
-              text: 'Payment gateway integration is almost complete. Stripe API is working well for card payments. Working on PayPal integration now.',
+              user: { name: 'Alice Developer', role: 'Developer' },
+              text: 'Payment gateway integration is 85% complete. Stripe API is working perfectly for card payments. Working on PayPal integration and will add Apple Pay support.',
               createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
             },
             {
               _id: 'comment3',
-              user: { name: 'Bob Smith', role: 'Designer' },
-              text: 'Updated the checkout flow design. Added progress indicators and improved mobile responsiveness. Ready for review.',
+              user: { name: 'Bob Designer', role: 'Designer' },
+              text: 'Updated the checkout flow design based on user feedback. Added progress indicators, trust badges, and improved mobile responsiveness. Prototype ready for review.',
               createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
             }
           ],
@@ -108,59 +109,188 @@ const ProjectDetailPage = () => {
           spent: 48750,
           createdAt: '2024-10-01T00:00:00.000Z'
         },
-        'default': {
-          _id: projectId,
+        '68e0f0edfec5a3b5fb39057b': {
+          _id: '68e0f0edfec5a3b5fb39057b',
           name: 'Mobile App Development',
-          description: 'Cross-platform mobile application with React Native, featuring real-time chat, push notifications, and offline capabilities. The app includes user authentication, social features, and integration with multiple third-party services.',
+          description: 'Create a cross-platform mobile app using React Native with advanced features including real-time chat, push notifications, offline capabilities, biometric authentication, and social sharing. The app will integrate with Firebase for backend services, implement Redux for state management, and support both iOS and Android platforms with native performance.',
           status: 'Ongoing',
           priority: 'High',
-          progress: 45,
+          progress: 48,
+          deadline: '2025-11-30T00:00:00.000Z',
           startDate: '2024-09-15T00:00:00.000Z',
-          endDate: '2024-11-30T00:00:00.000Z',
-          estimatedHours: 320,
-          actualHours: 144,
-          teamMembers: [
-            { _id: '1', name: 'Alice Johnson', role: 'Mobile Developer', email: 'alice.dev@gmail.com' },
-            { _id: '4', name: 'David Chen', role: 'Frontend Developer', email: 'david.frontend@hotmail.com' },
-            { _id: '3', name: 'Carol Davis', role: 'QA Tester', email: 'carol.test@yahoo.com' }
+          endDate: '2025-11-30T00:00:00.000Z',
+          estimatedHours: 380,
+          actualHours: 182,
+          members: [
+            { _id: '1', user: { _id: '1', name: 'Alice Developer', email: 'alice.dev@gmail.com' }, role: 'Mobile Developer' },
+            { _id: '4', user: { _id: '4', name: 'David Frontend', email: 'david.frontend@hotmail.com' }, role: 'Frontend Developer' },
+            { _id: '3', user: { _id: '3', name: 'Carol Tester', email: 'carol.test@yahoo.com' }, role: 'QA Tester' }
           ],
           manager: { _id: 'manager1', name: 'John Manager', email: 'john.manager@gmail.com' },
-          tags: ['React Native', 'Firebase', 'Socket.io', 'Redux', 'TypeScript'],
+          tags: ['React Native', 'Firebase', 'Socket.io', 'Redux', 'TypeScript', 'iOS', 'Android'],
           comments: [
             {
               _id: 'comment1',
               user: { name: 'John Manager', role: 'Manager' },
-              text: 'The authentication flow is working perfectly! Great job on implementing biometric login. Let\'s move forward with the chat features.',
+              text: 'The authentication flow is working perfectly! Great job on implementing biometric login with Face ID and Touch ID. Let\'s move forward with the real-time chat features.',
               createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
             },
             {
               _id: 'comment2',
-              user: { name: 'Alice Johnson', role: 'Developer' },
-              text: 'Real-time chat is now functional with Socket.io. Added message encryption and file sharing capabilities. Testing push notifications next.',
+              user: { name: 'Alice Developer', role: 'Developer' },
+              text: 'Real-time chat is now functional with Socket.io. Added end-to-end encryption, file sharing up to 10MB, and typing indicators. Testing push notifications for iOS and Android.',
               createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
             },
             {
               _id: 'comment3',
-              user: { name: 'David Chen', role: 'Developer' },
-              text: 'Offline mode implementation is complete. App can now sync data when connection is restored. Performance is excellent.',
+              user: { name: 'David Frontend', role: 'Developer' },
+              text: 'Offline mode implementation is complete using AsyncStorage. App can now sync data when connection is restored. Performance metrics showing 60fps consistently.',
               createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
             }
           ],
-          budget: 65000,
-          spent: 29250,
+          budget: 68000,
+          spent: 32640,
+          createdAt: '2024-09-15T00:00:00.000Z'
+        },
+        '68e0f0edfec5a3b5fb390581': {
+          _id: '68e0f0edfec5a3b5fb390581',
+          name: 'Company Website Redesign',
+          description: 'Redesign the company website with modern UI/UX principles, implementing responsive design, improved accessibility (WCAG 2.1 AA compliance), faster load times through optimization, SEO enhancements, blog integration with CMS, contact forms with validation, and interactive portfolio showcase. The redesign will modernize our brand presence and improve user engagement.',
+          status: 'Completed',
+          priority: 'Low',
+          progress: 100,
+          deadline: '2025-09-20T00:00:00.000Z',
+          startDate: '2024-08-01T00:00:00.000Z',
+          endDate: '2024-09-20T00:00:00.000Z',
+          estimatedHours: 240,
+          actualHours: 235,
+          members: [
+            { _id: '2', user: { _id: '2', name: 'Bob Designer', email: 'bob.design@outlook.com' }, role: 'UI/UX Designer' },
+            { _id: '1', user: { _id: '1', name: 'Alice Developer', email: 'alice.dev@gmail.com' }, role: 'Frontend Developer' },
+            { _id: '3', user: { _id: '3', name: 'Carol Tester', email: 'carol.test@yahoo.com' }, role: 'QA Specialist' }
+          ],
+          manager: { _id: 'manager1', name: 'John Manager', email: 'john.manager@gmail.com' },
+          tags: ['UI/UX', 'Figma', 'HTML5', 'CSS3', 'Accessibility', 'SEO', 'Responsive Design'],
+          comments: [
+            {
+              _id: 'comment1',
+              user: { name: 'John Manager', role: 'Manager' },
+              text: 'Excellent work team! The new design is clean, modern, and perfectly represents our brand. Launch was smooth and client feedback has been overwhelmingly positive! 🎉',
+              createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              _id: 'comment2',
+              user: { name: 'Bob Designer', role: 'Designer' },
+              text: 'Thanks everyone! The design system we created will make future updates much easier. All components are documented in Storybook for reference.',
+              createdAt: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              _id: 'comment3',
+              user: { name: 'Alice Developer', role: 'Developer' },
+              text: 'Page load times improved by 60%! Lighthouse score is now 95+ across all metrics. Mobile performance is excellent with lazy loading and optimized images.',
+              createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ],
+          budget: 45000,
+          spent: 44200,
+          createdAt: '2024-08-01T00:00:00.000Z'
+        },
+        '68e0f0edfec5a3b5fb390587': {
+          _id: '68e0f0edfec5a3b5fb390587',
+          name: 'API Documentation Portal',
+          description: 'Create a comprehensive API documentation portal using modern documentation tools, featuring interactive API explorer, code examples in multiple languages (JavaScript, Python, Java, C#), authentication guides, rate limiting information, webhook documentation, version control, search functionality, and playground environment for testing API calls. Will serve as the central hub for developer resources.',
+          status: 'On Hold',
+          priority: 'Medium',
+          progress: 30,
+          deadline: '2026-01-15T00:00:00.000Z',
+          startDate: '2024-10-15T00:00:00.000Z',
+          endDate: '2026-01-15T00:00:00.000Z',
+          estimatedHours: 180,
+          actualHours: 54,
+          members: [
+            { _id: '4', user: { _id: '4', name: 'David Frontend', email: 'david.frontend@hotmail.com' }, role: 'Documentation Lead' },
+            { _id: '1', user: { _id: '1', name: 'Alice Developer', email: 'alice.dev@gmail.com' }, role: 'Backend Developer' }
+          ],
+          manager: { _id: 'manager1', name: 'John Manager', email: 'john.manager@gmail.com' },
+          tags: ['Documentation', 'Swagger', 'OpenAPI', 'Markdown', 'API', 'Developer Tools'],
+          comments: [
+            {
+              _id: 'comment1',
+              user: { name: 'John Manager', role: 'Manager' },
+              text: 'Putting this project on hold temporarily to prioritize the e-commerce platform. We\'ll resume once the main platform launches. Great initial work though!',
+              createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              _id: 'comment2',
+              user: { name: 'David Frontend', role: 'Developer' },
+              text: 'Understood. I\'ve documented all progress so far. The OpenAPI spec is 30% complete and the portal framework is set up with Docusaurus. Ready to resume when needed.',
+              createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              _id: 'comment3',
+              user: { name: 'Alice Developer', role: 'Developer' },
+              text: 'Created sample code snippets for the auth endpoints in 4 languages. These can be reused when we resume. Also set up the automated API reference generator.',
+              createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ],
+          budget: 35000,
+          spent: 10500,
+          createdAt: '2024-10-15T00:00:00.000Z'
+        },
+        'default': {
+          _id: projectId,
+          name: 'Mobile App Development',
+          description: 'Create a cross-platform mobile app using React Native with advanced features including real-time chat, push notifications, offline capabilities, biometric authentication, and social sharing. The app will integrate with Firebase for backend services, implement Redux for state management, and support both iOS and Android platforms with native performance.',
+          status: 'Ongoing',
+          priority: 'High',
+          progress: 48,
+          deadline: '2025-11-30T00:00:00.000Z',
+          startDate: '2024-09-15T00:00:00.000Z',
+          endDate: '2025-11-30T00:00:00.000Z',
+          estimatedHours: 380,
+          actualHours: 182,
+          members: [
+            { _id: '1', user: { _id: '1', name: 'Alice Developer', email: 'alice.dev@gmail.com' }, role: 'Mobile Developer' },
+            { _id: '4', user: { _id: '4', name: 'David Frontend', email: 'david.frontend@hotmail.com' }, role: 'Frontend Developer' },
+            { _id: '3', user: { _id: '3', name: 'Carol Tester', email: 'carol.test@yahoo.com' }, role: 'QA Tester' }
+          ],
+          manager: { _id: 'manager1', name: 'John Manager', email: 'john.manager@gmail.com' },
+          tags: ['React Native', 'Firebase', 'Socket.io', 'Redux', 'TypeScript', 'iOS', 'Android'],
+          comments: [
+            {
+              _id: 'comment1',
+              user: { name: 'John Manager', role: 'Manager' },
+              text: 'The authentication flow is working perfectly! Great job on implementing biometric login with Face ID and Touch ID. Let\'s move forward with the real-time chat features.',
+              createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              _id: 'comment2',
+              user: { name: 'Alice Developer', role: 'Developer' },
+              text: 'Real-time chat is now functional with Socket.io. Added end-to-end encryption, file sharing up to 10MB, and typing indicators. Testing push notifications for iOS and Android.',
+              createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+              _id: 'comment3',
+              user: { name: 'David Frontend', role: 'Developer' },
+              text: 'Offline mode implementation is complete using AsyncStorage. App can now sync data when connection is restored. Performance metrics showing 60fps consistently.',
+              createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+            }
+          ],
+          budget: 68000,
+          spent: 32640,
           createdAt: '2024-09-15T00:00:00.000Z'
         }
       };
       
       const demoTasks = {
-        '68df8b1c9e397bd47a09f74': [
+        '68e0f0edfec5a3b5fb390575': [ // E-commerce Website tasks
           {
             _id: 'task1',
             title: 'Product Catalog System',
             description: 'Build comprehensive product catalog with search, filtering, and category management',
-            status: 'Completed',
+            status: 'Done',
             priority: 'High',
-            assignedTo: { name: 'Alice Johnson', email: 'alice.dev@gmail.com' },
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
             estimatedHours: 80,
             actualHours: 75,
             dueDate: '2024-10-15T00:00:00.000Z',
@@ -168,46 +298,57 @@ const ProjectDetailPage = () => {
           },
           {
             _id: 'task2',
-            title: 'Shopping Cart & Checkout',
-            description: 'Implement shopping cart functionality with secure checkout process',
+            title: 'Shopping Cart & Checkout Flow',
+            description: 'Implement shopping cart functionality with secure checkout process and order summary',
             status: 'In Progress',
             priority: 'High',
-            assignedTo: { name: 'Alice Johnson', email: 'alice.dev@gmail.com' },
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
             estimatedHours: 120,
             actualHours: 85,
-            dueDate: '2024-11-01T00:00:00.000Z'
+            dueDate: '2025-11-01T00:00:00.000Z'
           },
           {
             _id: 'task3',
             title: 'Payment Gateway Integration',
-            description: 'Integrate Stripe and PayPal payment systems with error handling',
-            status: 'To Do',
+            description: 'Integrate Stripe and PayPal payment systems with comprehensive error handling',
+            status: 'In Progress',
             priority: 'High',
-            assignedTo: { name: 'Alice Johnson', email: 'alice.dev@gmail.com' },
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
             estimatedHours: 60,
-            actualHours: 0,
-            dueDate: '2024-11-10T00:00:00.000Z'
+            actualHours: 35,
+            dueDate: '2025-11-10T00:00:00.000Z'
           },
           {
             _id: 'task4',
-            title: 'Admin Dashboard',
-            description: 'Create admin panel for order management and analytics',
+            title: 'Admin Dashboard Development',
+            description: 'Create comprehensive admin panel for order management, analytics, and inventory control',
             status: 'To Do',
             priority: 'Medium',
-            assignedTo: { name: 'Bob Smith', email: 'bob.design@outlook.com' },
+            assignedTo: { name: 'Bob Designer', email: 'bob.design@outlook.com' },
             estimatedHours: 100,
             actualHours: 0,
-            dueDate: '2024-11-20T00:00:00.000Z'
+            dueDate: '2025-11-20T00:00:00.000Z'
+          },
+          {
+            _id: 'task5',
+            title: 'User Reviews & Ratings',
+            description: 'Implement product review system with star ratings and verified purchase badges',
+            status: 'To Do',
+            priority: 'Low',
+            assignedTo: { name: 'Carol Tester', email: 'carol.test@yahoo.com' },
+            estimatedHours: 45,
+            actualHours: 0,
+            dueDate: '2025-12-05T00:00:00.000Z'
           }
         ],
-        'default': [
+        '68e0f0edfec5a3b5fb39057b': [ // Mobile App Development tasks
           {
             _id: 'task1',
-            title: 'Project Planning & Analysis',
-            description: 'Complete project requirements analysis and technical architecture design',
-            status: 'Completed',
+            title: 'Project Setup & Architecture',
+            description: 'Complete project requirements analysis and technical architecture design with React Native',
+            status: 'Done',
             priority: 'High',
-            assignedTo: { name: 'Alice Johnson', email: 'alice.dev@gmail.com' },
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
             estimatedHours: 40,
             actualHours: 38,
             dueDate: '2024-09-25T00:00:00.000Z',
@@ -215,36 +356,205 @@ const ProjectDetailPage = () => {
           },
           {
             _id: 'task2',
-            title: 'Core App Development',
-            description: 'Develop core features including authentication, navigation, and basic UI components',
-            status: 'In Progress',
+            title: 'Biometric Authentication',
+            description: 'Implement Face ID and Touch ID authentication with fallback to PIN',
+            status: 'Done',
             priority: 'High',
-            assignedTo: { name: 'Alice Johnson', email: 'alice.dev@gmail.com' },
-            estimatedHours: 160,
-            actualHours: 96,
-            dueDate: '2024-11-15T00:00:00.000Z'
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 50,
+            actualHours: 48,
+            dueDate: '2024-10-10T00:00:00.000Z',
+            completedAt: '2024-10-09T00:00:00.000Z'
           },
           {
             _id: 'task3',
-            title: 'Real-time Chat Features',
-            description: 'Implement chat functionality with Socket.io and message encryption',
+            title: 'Real-time Chat System',
+            description: 'Implement chat functionality with Socket.io, encryption, and file sharing',
             status: 'In Progress',
             priority: 'High',
-            assignedTo: { name: 'David Chen', email: 'david.frontend@hotmail.com' },
+            assignedTo: { name: 'David Frontend', email: 'david.frontend@hotmail.com' },
             estimatedHours: 80,
-            actualHours: 32,
-            dueDate: '2024-11-20T00:00:00.000Z'
+            actualHours: 52,
+            dueDate: '2025-11-20T00:00:00.000Z'
           },
           {
             _id: 'task4',
+            title: 'Push Notifications',
+            description: 'Set up Firebase Cloud Messaging for iOS and Android push notifications',
+            status: 'In Progress',
+            priority: 'High',
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 35,
+            actualHours: 18,
+            dueDate: '2025-11-15T00:00:00.000Z'
+          },
+          {
+            _id: 'task5',
+            title: 'Offline Data Sync',
+            description: 'Implement offline capabilities with AsyncStorage and automatic sync',
+            status: 'Done',
+            priority: 'Medium',
+            assignedTo: { name: 'David Frontend', email: 'david.frontend@hotmail.com' },
+            estimatedHours: 60,
+            actualHours: 58,
+            dueDate: '2024-10-30T00:00:00.000Z',
+            completedAt: '2024-10-29T00:00:00.000Z'
+          },
+          {
+            _id: 'task6',
+            title: 'Testing & QA',
+            description: 'Comprehensive testing including unit tests, integration tests, and user acceptance testing',
+            status: 'To Do',
+            priority: 'Medium',
+            assignedTo: { name: 'Carol Tester', email: 'carol.test@yahoo.com' },
+            estimatedHours: 55,
+            actualHours: 0,
+            dueDate: '2025-11-25T00:00:00.000Z'
+          }
+        ],
+        '68e0f0edfec5a3b5fb390581': [ // Company Website Redesign tasks
+          {
+            _id: 'task1',
+            title: 'UI/UX Design & Wireframes',
+            description: 'Create modern design system and interactive wireframes in Figma',
+            status: 'Done',
+            priority: 'High',
+            assignedTo: { name: 'Bob Designer', email: 'bob.design@outlook.com' },
+            estimatedHours: 60,
+            actualHours: 58,
+            dueDate: '2024-08-15T00:00:00.000Z',
+            completedAt: '2024-08-14T00:00:00.000Z'
+          },
+          {
+            _id: 'task2',
+            title: 'Responsive Frontend Development',
+            description: 'Build responsive website with HTML5, CSS3, and modern JavaScript',
+            status: 'Done',
+            priority: 'High',
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 85,
+            actualHours: 82,
+            dueDate: '2024-09-05T00:00:00.000Z',
+            completedAt: '2024-09-04T00:00:00.000Z'
+          },
+          {
+            _id: 'task3',
+            title: 'SEO Optimization',
+            description: 'Implement comprehensive SEO with meta tags, structured data, and performance optimization',
+            status: 'Done',
+            priority: 'Medium',
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 35,
+            actualHours: 33,
+            dueDate: '2024-09-12T00:00:00.000Z',
+            completedAt: '2024-09-11T00:00:00.000Z'
+          },
+          {
+            _id: 'task4',
+            title: 'Accessibility Compliance',
+            description: 'Ensure WCAG 2.1 AA compliance with screen reader support and keyboard navigation',
+            status: 'Done',
+            priority: 'High',
+            assignedTo: { name: 'Bob Designer', email: 'bob.design@outlook.com' },
+            estimatedHours: 40,
+            actualHours: 42,
+            dueDate: '2024-09-15T00:00:00.000Z',
+            completedAt: '2024-09-15T00:00:00.000Z'
+          },
+          {
+            _id: 'task5',
+            title: 'Quality Assurance & Testing',
+            description: 'Cross-browser testing, performance testing, and user acceptance testing',
+            status: 'Done',
+            priority: 'High',
+            assignedTo: { name: 'Carol Tester', email: 'carol.test@yahoo.com' },
+            estimatedHours: 20,
+            actualHours: 20,
+            dueDate: '2024-09-20T00:00:00.000Z',
+            completedAt: '2024-09-19T00:00:00.000Z'
+          }
+        ],
+        '68e0f0edfec5a3b5fb390587': [ // API Documentation Portal tasks
+          {
+            _id: 'task1',
+            title: 'Documentation Framework Setup',
+            description: 'Set up Docusaurus framework and configure deployment pipeline',
+            status: 'Done',
+            priority: 'High',
+            assignedTo: { name: 'David Frontend', email: 'david.frontend@hotmail.com' },
+            estimatedHours: 25,
+            actualHours: 24,
+            dueDate: '2024-10-25T00:00:00.000Z',
+            completedAt: '2024-10-24T00:00:00.000Z'
+          },
+          {
+            _id: 'task2',
+            title: 'OpenAPI Specification',
+            description: 'Create comprehensive OpenAPI 3.0 specification for all API endpoints',
+            status: 'In Progress',
+            priority: 'High',
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 50,
+            actualHours: 18,
+            dueDate: '2026-01-05T00:00:00.000Z'
+          },
+          {
+            _id: 'task3',
+            title: 'Code Examples',
+            description: 'Write code examples in JavaScript, Python, Java, and C# for all endpoints',
+            status: 'To Do',
+            priority: 'Medium',
+            assignedTo: { name: 'David Frontend', email: 'david.frontend@hotmail.com' },
+            estimatedHours: 60,
+            actualHours: 0,
+            dueDate: '2026-01-10T00:00:00.000Z'
+          },
+          {
+            _id: 'task4',
+            title: 'Interactive API Playground',
+            description: 'Build interactive API testing environment with authentication',
+            status: 'To Do',
+            priority: 'Low',
+            assignedTo: { name: 'David Frontend', email: 'david.frontend@hotmail.com' },
+            estimatedHours: 45,
+            actualHours: 0,
+            dueDate: '2026-01-15T00:00:00.000Z'
+          }
+        ],
+        'default': [ // Default tasks if project ID doesn't match
+          {
+            _id: 'task1',
+            title: 'Project Planning & Analysis',
+            description: 'Complete project requirements analysis and technical architecture design',
+            status: 'Done',
+            priority: 'High',
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 40,
+            actualHours: 38,
+            dueDate: '2024-09-25T00:00:00.000Z',
+            completedAt: '2024-09-24T00:00:00.000Z'
+          },
+          {
+            _id: 'task2',
+            title: 'Core Development',
+            description: 'Develop core features including authentication, navigation, and basic UI components',
+            status: 'In Progress',
+            priority: 'High',
+            assignedTo: { name: 'Alice Developer', email: 'alice.dev@gmail.com' },
+            estimatedHours: 160,
+            actualHours: 96,
+            dueDate: '2025-11-15T00:00:00.000Z'
+          },
+          {
+            _id: 'task3',
             title: 'Testing & Quality Assurance',
             description: 'Comprehensive testing including unit tests, integration tests, and user acceptance testing',
             status: 'To Do',
             priority: 'Medium',
-            assignedTo: { name: 'Carol Davis', email: 'carol.test@yahoo.com' },
+            assignedTo: { name: 'Carol Tester', email: 'carol.test@yahoo.com' },
             estimatedHours: 40,
             actualHours: 0,
-            dueDate: '2024-11-25T00:00:00.000Z'
+            dueDate: '2025-11-25T00:00:00.000Z'
           }
         ]
       };

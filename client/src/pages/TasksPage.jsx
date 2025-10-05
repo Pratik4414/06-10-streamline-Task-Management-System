@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getTasks, createTask, getProjects, getTeamMembers } from '../services/api';
+import { getTasks, createTask, getProjects, getTeamMembers, deleteTask } from '../services/api';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Trash2 } from 'lucide-react';
 import './TasksPage.css';
 
 // --- Create Task Modal Component ---
@@ -103,6 +103,26 @@ const TasksPage = () => {
         }, { 'To Do': [], 'In Progress': [], 'Done': [] });
     }, []);
 
+    const handleDeleteTask = async (taskId) => {
+        if (!window.confirm('Are you sure you want to delete this task?')) return;
+        
+        try {
+            await deleteTask(taskId);
+            // Remove task from state
+            setTasks(prevTasks => prevTasks.filter(t => t._id !== taskId));
+            setColumns(prevColumns => {
+                const newColumns = { ...prevColumns };
+                Object.keys(newColumns).forEach(status => {
+                    newColumns[status] = newColumns[status].filter(t => t._id !== taskId);
+                });
+                return newColumns;
+            });
+        } catch (error) {
+            console.error('Failed to delete task:', error);
+            alert('Failed to delete task. Please try again.');
+        }
+    };
+
     useEffect(() => {
         setIsLoading(true);
         Promise.all([
@@ -142,7 +162,18 @@ const TasksPage = () => {
                         <div className="column-tasks">
                             {columns[status].map(task => (
                                 <div key={task._id} className="kanban-task">
-                                    <p className="task-title">{task.title}</p>
+                                    <div className="task-header-row">
+                                        <p className="task-title">{task.title}</p>
+                                        {isManager && status === 'To Do' && (
+                                            <button 
+                                                className="task-delete-btn"
+                                                onClick={() => handleDeleteTask(task._id)}
+                                                title="Delete task"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </div>
                                     <div className="task-footer">
                                         <div className="assignee-info">
                                             Assigned to: {task.assignedTo?.name || 'Unassigned'}

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardStats } from '../services/api'; // <-- Import the new API function
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Menu, MoreHorizontal, CheckSquare } from 'lucide-react';
+import { Menu, MoreHorizontal, CheckSquare, Users } from 'lucide-react';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -77,22 +77,42 @@ const DashboardPage = () => {
                         </div>
                     )}
                     <main className="dashboard-main">
-                        <h1 className="main-title">Task Management</h1>
-                        <div className="kanban-placeholder">
-                            <p>The main Kanban Board from the Tasks page would be displayed here.</p>
-                            <CheckSquare size={48} />
+                        <h1 className="main-title">Task Management Dashboard</h1>
+                        <div className="dashboard-task-preview">
+                            <div className="task-board-header">
+                                <h2>Your Tasks Overview</h2>
+                                <button className="view-all-btn" onClick={() => navigate('/tasks')}>View All Tasks →</button>
+                            </div>
+                            <div className="mini-kanban">
+                                <div className="mini-column">
+                                    <h3>To Do</h3>
+                                    <div className="task-count">{scheduleData.length}</div>
+                                    <p className="column-desc">Pending tasks</p>
+                                </div>
+                                <div className="mini-column">
+                                    <h3>In Progress</h3>
+                                    <div className="task-count">2</div>
+                                    <p className="column-desc">Active work</p>
+                                </div>
+                                <div className="mini-column completed">
+                                    <h3>Done</h3>
+                                    <div className="task-count">3</div>
+                                    <p className="column-desc">Completed</p>
+                                </div>
+                            </div>
+                            <div className="quick-actions">
+                                <button className="action-card" onClick={() => navigate('/projects')}>
+                                    <CheckSquare size={24} />
+                                    <span>View Projects</span>
+                                </button>
+                                <button className="action-card" onClick={() => navigate('/team')}>
+                                    <Users size={24} />
+                                    <span>Team Chat</span>
+                                </button>
+                            </div>
                         </div>
                     </main>
                     <aside className="dashboard-sidebar">
-                        <div className="widget user-profile">
-                            <div className="profile-info">
-                                <span className="profile-name">{user.name}</span>
-                                <span className="profile-role">{user.email}</span>
-                            </div>
-                            <div className="profile-avatar-wrapper">
-                                <div className="profile-avatar">{user.name.charAt(0)}</div>
-                            </div>
-                        </div>
                         <div className="widget">
                             <h3 className="widget-title">Completed Tasks</h3>
                             <div className="chart-container">
