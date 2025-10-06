@@ -1,0 +1,80 @@
+##############################
+# Global Node / JS Monorepo  #
+##############################
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Coverage
+coverage/
+*.lcov
+
+# Build / Dist outputs
+client/dist/
+server/dist/
+build/
+out/
+.next/
+
+# Vite cache
+client/.vite/
+.vite/
+
+# Caches / Temp
+.cache/
+.parcel-cache/
+temp/
+.tmp/
+*.tsbuildinfo
+.eslintcache
+
+# Environment files (keep example allowed)
+.env
+.env.*
+server/.env
+!.env.example
+!server/.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Package manager locks (uncomment one if you want to lock)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Auth / Keys
+*.pem
+
+# Archives
+*.tgz
+
+# Reports / Misc
+reports/
+
+##############################
+# End
+##############################
