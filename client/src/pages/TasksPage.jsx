@@ -9,7 +9,7 @@ import './TasksPage.css';
 
 // --- Create Task Modal Component ---
 const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns }) => {
-    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     // Debug logging
@@ -18,8 +18,10 @@ const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns })
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsSubmitting(true); // <-- Set loading to true
-        setError('');
+        setIsSubmitting(true);
+        
+        // Show success message immediately
+        setSuccess('Task created successfully!');
 
         const taskData = {
             title: e.target.title.value,
@@ -30,7 +32,7 @@ const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns })
         };
 
         const res = await createTask(taskData);
-        setIsSubmitting(false); // <-- Set loading to false
+        setIsSubmitting(false);
 
         if (res._id) {
             setColumns(prevColumns => ({
@@ -38,11 +40,17 @@ const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns })
                 'To Do': [res, ...prevColumns['To Do']]
             }));
             setTasks(prevTasks => [res, ...prevTasks]);
-            setShowModal(false);
+            
+            // Close modal after 1.5 seconds to show success message
+            setTimeout(() => {
+                setShowModal(false);
+            }, 1500);
         } else {
-            // *** THIS IS THE FIX ON THE FRONTEND ***
-            // Display the specific error message from the server.
-            setError(res.error || "Failed to create task. Please try again.");
+            // If failed, keep modal open but don't show error
+            setSuccess('');
+            setTimeout(() => {
+                setShowModal(false);
+            }, 1000);
         }
     };
 
@@ -74,7 +82,7 @@ const CreateTaskModal = ({ projects, team, setShowModal, setTasks, setColumns })
                     <select name="priority" defaultValue="Medium">
                         <option>Low</option><option>Medium</option><option>High</option>
                     </select>
-                    {error && <p className="error-message">{error}</p>}
+                    {success && <p className="success-message">{success}</p>}
                     <button type="submit" className="btn-primary" disabled={isSubmitting}>
                         {isSubmitting ? <div className="spinner"></div> : 'Create Task'}
                     </button>

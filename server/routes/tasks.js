@@ -2,6 +2,7 @@ import express from 'express';
 import { protect } from '../middleware/authMiddleware.js';
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
+import Notification from '../models/Notification.js';
 
 const router = express.Router();
 
@@ -95,6 +96,22 @@ router.post('/', protect, async (req, res) => {
     projectDoc.addActivity(req.user.id, 'Created task', `Created task "${title}"`);
     await projectDoc.save();
     
+    // Create notification for assigned user (if not assigning to self)
+    if (assignedTo && assignedTo.toString() !== req.user.id.toString()) {
+      await Notification.create({
+        user: assignedTo,
+        type: 'taskStatus',
+        title: 'New Task Assigned',
+        message: `You have been assigned to "${title}" in project "${projectDoc.name}"`,
+        link: `/tasks`,
+        metadata: {
+          taskId: createdTask._id,
+          projectId: project,
+          priority: priority || 'Medium'
+        }
+      });
+    }
+    
     // Populate and return the created task
     const populatedTask = await Task.findById(createdTask._id)
       .populate('project', 'name status')
@@ -140,6 +157,11 @@ router.put('/:id', protect, async (req, res) => {
     if (status && status !== task.status) changes.push(`status from "${task.status}" to "${status}"`);
     if (priority && priority !== task.priority) changes.push(`priority from "${task.priority}" to "${priority}"`);
     
+    // Track if assignee is changing
+    const oldAssignee = task.assignedTo?.toString();
+    const newAssignee = assignedTo?.toString();
+    const assigneeChanged = newAssignee && oldAssignee !== newAssignee;
+    
     // Update fields
     if (title) task.title = title;
     if (description !== undefined) task.description = description;
@@ -147,6 +169,22 @@ router.put('/:id', protect, async (req, res) => {
     if (priority) task.priority = priority;
     if (dueDate) task.dueDate = new Date(dueDate);
     if (assignedTo) task.assignedTo = assignedTo;
+    
+    // Create notification for new assignee
+    if (assigneeChanged && newAssignee !== req.user.id.toString()) {
+      await Notification.create({
+        user: newAssignee,
+        type: 'taskStatus',
+        title: 'Task Reassigned to You',
+        message: `You have been assigned to "${task.title}" in project "${task.project.name}"`,
+        link: `/tasks`,
+        metadata: {
+          taskId: task._id,
+          projectId: task.project._id,
+          priority: task.priority
+        }
+      });
+    }
     if (estimatedHours !== undefined) task.estimatedHours = estimatedHours;
     if (actualHours !== undefined) task.actualHours = actualHours;
     if (tags) task.tags = tags;

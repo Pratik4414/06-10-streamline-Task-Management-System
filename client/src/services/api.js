@@ -89,7 +89,12 @@ export const uploadProjectFile = (projectId, formData) => api.post(`/projects/${
 });
 
 // --- TASKS API CALLS ---
-export const getTasks = () => api.get('/tasks');
+export const getTasks = (projectId) => {
+  if (projectId) {
+    return api.get(`/tasks?project=${projectId}`);
+  }
+  return api.get('/tasks');
+};
 export const createTask = (taskData) => api.post('/tasks', taskData);
 export const updateTask = (taskId, taskData) => api.put(`/tasks/${taskId}`, taskData);
 export const deleteTask = (taskId) => api.delete(`/tasks/${taskId}`);
@@ -155,8 +160,9 @@ export const selfServiceRegenerate = (data) => api.post('/enhanced-recovery/self
 
 // --- NOTIFICATIONS API CALLS ---
 export const getNotifications = () => api.get('/notifications');
-export const markNotificationAsRead = (notificationId) => api.put(`/notifications/${notificationId}/read`);
+export const markNotificationAsRead = (notificationId) => api.patch(`/notifications/${notificationId}/read`);
 export const markAllNotificationsAsRead = () => api.put('/notifications/read-all');
+export const clearAllNotifications = () => api.delete('/notifications/clear');
 
 // Simple connectivity check
 export const healthCheck = () => api.get('/health');

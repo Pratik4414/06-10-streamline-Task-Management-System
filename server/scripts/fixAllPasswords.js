@@ -1,10 +1,18 @@
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import argon2 from 'argon2';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 async function fixAllPasswords() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/project_mgmt');
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB');
     
     const users = [

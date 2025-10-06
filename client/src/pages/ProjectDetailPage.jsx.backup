@@ -40,6 +40,7 @@ const ProjectDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showMonitorProgress, setShowMonitorProgress] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isAddingComment, setIsAddingComment] = useState(false);
   const isManager = user?.role === 'manager';
@@ -51,27 +52,39 @@ const ProjectDetailPage = () => {
   const fetchProjectDetails = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       
       console.log('🔍 ProjectDetailPage - Fetching project ID:', projectId);
       
-      // Try to fetch real data first
-      try {
-        const projectData = await getProject(projectId);
-        const projectTasks = await getTasks(projectId); // Pass projectId to filter tasks
-        
-        if (projectData && projectData.data) {
-          setProject(projectData.data);
-          setTasks(projectTasks.data || []);
-          console.log('✅ Loaded real project data:', projectData.data.name);
-          console.log('✅ Loaded project tasks:', projectTasks.data?.length || 0, 'tasks');
-          return;
-        }
-      } catch (apiError) {
-        console.log('API call failed, using demo data:', apiError);
-      }
+      // Fetch real data from API
+      const projectData = await getProject(projectId);
+      const projectTasks = await getTasks(projectId);
       
-      // Fallback to realistic demo data for presentation - map by actual project IDs from DB
-      const demoProjects = {
+      if (projectData && projectData.data) {
+        setProject(projectData.data);
+        setTasks(projectTasks.data || []);
+        console.log('✅ Loaded project data:', projectData.data.name);
+      } else {
+        setError('Project not found');
+      }
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+      setError(error.response?.data?.error || 'Failed to load project details');
+      setProject(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const { data } = await getProjectAnalytics(projectId);
+      setAnalytics(data);
+      setShowAnalytics(true);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      // Simple fallback analytics
+      const fallbackAnalytics = {
         '68e0f0edfec5a3b5fb390575': {
           _id: '68e0f0edfec5a3b5fb390575',
           name: 'E-commerce Website',
@@ -733,7 +746,7 @@ const ProjectDetailPage = () => {
           {isManager && (
             <div className="project-actions">
               <button 
-                onClick={() => navigate(`/projects/${projectId}/monitor`)}
+                onClick={() => setShowMonitorProgress(true)}
                 className="action-btn monitor-btn"
               >
                 <TrendingUp size={18} />
@@ -1047,6 +1060,26 @@ const ProjectDetailPage = () => {
         </div>
       )}
 
+      {/* Monitor Progress Modal */}
+      {showMonitorProgress && (
+        <div className="modal-backdrop" onClick={() => setShowMonitorProgress(false)}>
+          <div className="modal-content monitor-progress-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                <TrendingUp size={24} />
+                Monitor Progress - {project.name}
+              </h2>
+              <button 
+                className="close-btn" 
+                onClick={() => setShowMonitorProgress(false)}
+              >
+                ×
+              </button>
+            </div>
+            <MonitorProgress project={project} tasks={tasks} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

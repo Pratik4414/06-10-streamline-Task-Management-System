@@ -86,17 +86,17 @@ const DashboardPage = () => {
                             <div className="mini-kanban">
                                 <div className="mini-column">
                                     <h3>To Do</h3>
-                                    <div className="task-count">{scheduleData.length}</div>
+                                    <div className="task-count">{stats.todoCount || 0}</div>
                                     <p className="column-desc">Pending tasks</p>
                                 </div>
                                 <div className="mini-column">
                                     <h3>In Progress</h3>
-                                    <div className="task-count">2</div>
+                                    <div className="task-count">{stats.inProgressCount || 0}</div>
                                     <p className="column-desc">Active work</p>
                                 </div>
                                 <div className="mini-column completed">
                                     <h3>Done</h3>
-                                    <div className="task-count">3</div>
+                                    <div className="task-count">{stats.doneCount || 0}</div>
                                     <p className="column-desc">Completed</p>
                                 </div>
                             </div>

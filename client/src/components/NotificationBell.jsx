@@ -14,7 +14,12 @@ export default function NotificationBell() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { 
+    load(); 
+    // Poll for notifications every 5 seconds for real-time updates
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const onOpen = () => { setOpen(!open); if (!open) load(); };
   const markRead = async (id) => {

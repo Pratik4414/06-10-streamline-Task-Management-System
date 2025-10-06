@@ -6,7 +6,6 @@ import { validation, getPasswordStrength } from '../utils/validation';
 const sections = [
   { key: 'account', label: 'Account' },
   { key: 'appearance', label: 'Appearance' },
-  { key: 'notifications', label: 'Notifications' },
   { key: 'security', label: 'Security' },
 ];
 
@@ -242,8 +241,7 @@ export default function SettingsPage() {
       <div className="settings-content">
         {active === 'account' && <AccountSection />}
         {active === 'appearance' && <AppearanceSection />}
-  {active === 'notifications' && <NotificationsSection />}
-  {active === 'security' && <SecuritySection />}
+        {active === 'security' && <SecuritySection />}
       </div>
     </div>
   );

@@ -18,8 +18,14 @@ router.get('/dashboard-stats', protect, async (req, res) => {
         if (projectId) {
             matchStage.project = new mongoose.Types.ObjectId(projectId);
         }
+        
+        // Filter by current user unless they are a manager
+        const isManager = req.user.role === 'Manager';
+        if (!isManager) {
+            matchStage.assignedTo = userId;
+        }
 
-        // 1. Get Completed Task counts for team members (optionally filtered by project)
+        // 1. Get Completed Task counts for team members (optionally filtered by project and user)
         const completedTasks = await Task.aggregate([
             { $match: { status: 'Done', ...matchStage } },
             { $group: { _id: '$assignedTo', tasks: { $sum: 1 } } },
@@ -55,11 +61,19 @@ router.get('/dashboard-stats', protect, async (req, res) => {
             { $group: { _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, status: "$status" }, count: { $sum: 1 } } },
             { $sort: { "_id.date": 1 } }
         ]);
+        
+        // 4. Get task counts by status for the current user
+        const todoCount = await Task.countDocuments({ ...matchStage, status: 'To Do' });
+        const inProgressCount = await Task.countDocuments({ ...matchStage, status: 'In Progress' });
+        const doneCount = await Task.countDocuments({ ...matchStage, status: 'Done' });
 
         res.json({
             completedTasksData: completedTasks,
             efficiencyData,
-            burnDownData
+            burnDownData,
+            todoCount,
+            inProgressCount,
+            doneCount
         });
 
     } catch (error) {

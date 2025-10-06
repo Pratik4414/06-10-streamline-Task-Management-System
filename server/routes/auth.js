@@ -9,6 +9,7 @@ import { protect } from "../middleware/authMiddleware.js";
 import SecurityLog from "../models/SecurityLog.js";
 import { authenticator } from 'otplib';
 import crypto from 'crypto';
+import Notification from "../models/Notification.js";
 
 // Helper function to generate backup codes
 const generateBackupCodes = async () => {
@@ -60,6 +61,14 @@ router.post("/register", async (req, res) => {
       // No backup codes generated here anymore
     });
     await user.save();
+
+    // Clear all existing notifications for this new user (if any exist)
+    try {
+      await Notification.deleteMany({ user: user._id });
+      console.log(`✅ Cleared all notifications for new user: ${email}`);
+    } catch (notifError) {
+      console.error('Error clearing notifications:', notifError);
+    }
 
     try { await SecurityLog.create({ user: user._id, event: 'register', ip: req.ip, userAgent: req.headers['user-agent'] }); } catch {}
     

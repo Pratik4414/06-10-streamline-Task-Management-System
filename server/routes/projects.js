@@ -6,6 +6,7 @@ import Project from '../models/Project.js';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
 import Team from '../models/Team.js';
+import Notification from '../models/Notification.js';
 
 const router = express.Router();
 
@@ -191,6 +192,22 @@ router.post('/', protect, manager, async (req, res) => {
     
     const createdProject = await project.save();
     
+    // Create notifications for all project members
+    if (members && members.length > 0) {
+      const notifications = members.map(member => ({
+        user: member.user,
+        type: 'project',
+        title: 'Added to New Project',
+        message: `You have been added to project "${name}"`,
+        link: `/projects/${createdProject._id}`,
+        metadata: {
+          projectId: createdProject._id,
+          priority: priority || 'Medium'
+        }
+      }));
+      await Notification.insertMany(notifications);
+    }
+    
     // Populate the created project
     const populatedProject = await Project.findById(createdProject._id)
       .populate('manager', 'name email')
@@ -238,8 +255,27 @@ router.put('/:id', protect, async (req, res) => {
     
     // Update members if provided
     if (memberIds && Array.isArray(memberIds)) {
+      const oldMemberIds = project.members.map(m => m.user.toString());
+      const newMemberIds = memberIds.filter(id => !oldMemberIds.includes(id.toString()));
+      
       project.members = memberIds.map(userId => ({ user: userId, role: 'Developer' }));
       changes.push('team members');
+      
+      // Create notifications for newly added members
+      if (newMemberIds.length > 0) {
+        const notifications = newMemberIds.map(userId => ({
+          user: userId,
+          type: 'project',
+          title: 'Added to Project',
+          message: `You have been added to project "${project.name}"`,
+          link: `/projects/${project._id}`,
+          metadata: {
+            projectId: project._id,
+            priority: project.priority
+          }
+        }));
+        await Notification.insertMany(notifications);
+      }
     }
     
     // Add activity log

@@ -68,4 +68,37 @@ router.patch('/:id/read', protect, async (req, res) => {
   }
 });
 
+// PUT /api/notifications/read-all - mark all as read
+router.put('/read-all', protect, async (req, res) => {
+  try {
+    const result = await Notification.updateMany(
+      { user: req.user._id, read: false },
+      { read: true }
+    );
+    res.json({ 
+      success: true, 
+      message: `Marked ${result.modifiedCount} notification(s) as read`,
+      modifiedCount: result.modifiedCount 
+    });
+  } catch (err) {
+    console.error('Mark all read error:', err);
+    res.status(500).json({ success: false, error: 'Failed to mark all as read' });
+  }
+});
+
+// DELETE /api/notifications/clear - clear all notifications for a user
+router.delete('/clear', protect, async (req, res) => {
+  try {
+    const result = await Notification.deleteMany({ user: req.user._id });
+    res.json({ 
+      success: true, 
+      message: `Cleared ${result.deletedCount} notification(s)`,
+      deletedCount: result.deletedCount 
+    });
+  } catch (err) {
+    console.error('Clear notifications error:', err);
+    res.status(500).json({ success: false, error: 'Failed to clear notifications' });
+  }
+});
+
 export default router;
